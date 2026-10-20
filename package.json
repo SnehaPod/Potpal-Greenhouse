@@ -1,0 +1,23 @@
+{
+  "name": "potpal",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Potpal: identify house plants from a photo and keep them happy.",
+  "scripts": {
+    "postinstall": "npm install --prefix client && npm install --prefix server",
+    "dev": "concurrently -n server,client -c green,yellow \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:stop": "supabase stop",
+    "test": "npm test --prefix server && node --test \"client/src/lib/**/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22.9"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "supabase": "^2.20.0"
+  }
+}

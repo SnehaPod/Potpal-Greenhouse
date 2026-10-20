@@ -1,0 +1,5 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- "Hide password" icon: the open-eye partner of eye-off.svg (same 20px size, stroke and colour) -->
+<path d="M1.718 10.29a.83.83 0 0 1 0-.58 8.96 8.96 0 0 1 16.564 0 .83.83 0 0 1 0 .58 8.96 8.96 0 0 1-16.564 0Z" stroke="#286344" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="10" cy="10" r="2.5" stroke="#286344" stroke-width="1.7"/>
+</svg>

@@ -1,0 +1,345 @@
+/*
+ * Potpal design system.
+ * Copied from the PotPal Figma export (potpal_1.html). The tokens in :root drive
+ * every colour, radius and font, so change them here and the whole app follows.
+ */
+@font-face{font-family:'Roboto';font-style:normal;font-weight:100 900;font-display:swap;src:url(/fonts/roboto.woff2) format('woff2')}
+@font-face{font-family:'Roboto';font-style:italic;font-weight:100 900;font-display:swap;src:url(/fonts/roboto-italic.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:200 1000;font-display:swap;src:url(/fonts/nunito.woff2) format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/inter-600.woff2) format('woff2')}
+/* ---------- Design tokens (from the PotPal Figma file) ---------- */
+:root{
+  --bg:#f7f6ee; --surface:#fff; --ink:#203c2d; --green:#286344; --muted:#738075;
+  --mint:#e7eedc; --butter:#fff0be; --line:#d8dfd0; --nav-active:#c9ddbb;
+  --dark:#14261d; --tip:#c8d6cc; --fine:#a8bbac;
+  --r-card:24px; --r-chip:8px; --r-pill:100px;
+  --display:'Nunito', ui-rounded, system-ui, sans-serif;
+  --text:'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --pad:24px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:#e9e8dd;color:var(--ink);font-family:var(--text);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:inherit}
+img,svg{display:block}
+:focus-visible{outline:3px solid var(--green);outline-offset:2px;border-radius:6px}
+
+/* ---------- App shell: full-bleed on phones, centred "device" on larger screens ---------- */
+/* overflow:clip (not overflow:hidden) so the sticky bottom nav keeps working */
+.app{max-width:480px;min-height:100dvh;margin:0 auto;background:var(--bg);position:relative;overflow:clip}
+@media (min-width:560px){
+  body{padding:32px 16px}
+  .app{min-height:calc(100dvh - 64px);border-radius:28px;box-shadow:0 24px 60px rgba(32,60,45,.18)}
+}
+.screen{display:flex;flex-direction:column;min-height:inherit}
+.screen-body{flex:1;display:flex;flex-direction:column;gap:20px;padding:12px var(--pad) 24px}
+
+/* ---------- Typography ---------- */
+.d{font-family:var(--display);font-weight:800}
+.eyebrow{font-weight:600;font-size:11px;letter-spacing:0;text-transform:uppercase}
+.h-hero{font-family:var(--display);font-weight:800;font-size:30px;line-height:1.15}
+.lede{font-size:14px;line-height:1.45;color:var(--muted)}
+.muted{color:var(--muted)}
+.green{color:var(--green)}
+.semi{font-weight:600}
+.lh{line-height:1.45}
+
+/* ---------- App bar ---------- */
+.appbar{display:flex;align-items:center;gap:12px;height:64px;padding:0 16px;flex-shrink:0}
+.appbar--flush{padding:0 24px}
+.appbar .title{flex:1;min-width:0;font-family:var(--display);font-weight:800;font-size:21px}
+.icon-btn{width:40px;height:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:12px}
+.brand{flex:1;font-family:var(--display);font-weight:800;font-size:26px;color:var(--green)}
+.avatar{width:40px;height:40px;border-radius:var(--r-pill);background:var(--butter);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+
+/* ---------- Shared components ---------- */
+.card{background:var(--surface);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column}
+.card--mint{background:var(--mint)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:var(--r-chip);background:var(--mint);color:var(--green);font-weight:600;font-size:12px;white-space:nowrap;flex-shrink:0}
+.badge--butter{background:var(--butter)}
+.divider{height:1px;background:var(--line);flex-shrink:0}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.stack{display:flex;flex-direction:column}
+.symbol{width:44px;height:44px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--butter)}
+.symbol--mint{background:var(--mint)}
+.t14{font-size:14px}.t13{font-size:13px}.t12{font-size:12px}.t11{font-size:11px}
+.btn-primary{height:56px;width:100%;border-radius:var(--r-pill);background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:600;font-size:15px;flex-shrink:0;transition:filter .15s}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-primary:active{filter:brightness(.92)}
+.link{font-size:12px;line-height:1.45;color:var(--green);text-align:center;width:100%}
+.footnote{font-size:12px;line-height:1.45;color:var(--muted);text-align:center}
+.photo{position:relative;flex-shrink:0}
+.photo > img{width:100%;height:auto;border-radius:var(--r-card)}
+.photo .overlay{position:absolute}
+
+/* Checkbox (Material, 22 / 20px) */
+.check{width:22px;height:22px;border:2px solid var(--muted);border-radius:3px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.check svg{display:none}
+.check[aria-checked="true"]{background:var(--green);border-color:var(--green)}
+.check[aria-checked="true"] svg{display:block}
+.check--sm{width:20px;height:20px;background:transparent}
+
+/* Switch (Material 3, on) */
+.switch{width:52px;height:32px;border-radius:var(--r-pill);background:var(--green);padding:4px;display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;transition:background .2s}
+.switch .thumb{width:24px;height:24px;border-radius:var(--r-pill);background:#fff;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.switch[aria-checked="false"]{background:var(--line);justify-content:flex-start}
+.switch[aria-checked="false"] .thumb{width:16px;height:16px;margin:0 4px;background:var(--muted)}
+.switch[aria-checked="false"] .thumb svg{display:none}
+
+/* Bottom navigation (Material) */
+.navbar{position:sticky;bottom:0;z-index:5;height:80px;background:var(--mint);display:flex;justify-content:space-between;padding:12px 16px;flex-shrink:0}
+.nav-dest{width:112px;display:flex;flex-direction:column;align-items:center;gap:5px;font-weight:600;font-size:12px;color:var(--muted)}
+.nav-dest .ind{width:64px;height:32px;border-radius:var(--r-pill);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.nav-dest[aria-current="page"]{color:var(--green)}
+.nav-dest[aria-current="page"] .ind{background:var(--nav-active)}
+@media (max-width:380px){.nav-dest{width:auto;flex:1}}
+
+/* ---------- Screen: My plants ---------- */
+.greeting{display:flex;flex-direction:column;gap:8px}
+.task .grow{display:flex;flex-direction:column;gap:4px}
+.health-prompt{display:flex;align-items:center;gap:14px;padding:18px;border-radius:var(--r-card);background:var(--mint);width:100%}
+.plant-cards{display:flex;gap:12px}
+.plant-card{flex:1;min-width:0;background:#fff;border-radius:var(--r-card);padding:8px;display:flex;flex-direction:column;gap:10px}
+.plant-card img{width:100%;height:auto;border-radius:18px}
+.plant-card .details{padding:0 6px 8px;display:flex;flex-direction:column;gap:5px}
+.plant-card .name{font-family:var(--display);font-weight:800;font-size:22px;line-height:1.15}
+.status{display:flex;align-items:center;gap:4px;font-weight:600;font-size:11px;color:var(--green)}
+.add-plant{height:48px;display:flex;align-items:center;gap:6px;font-weight:600;font-size:13px;color:var(--green)}
+
+/* ---------- Screen: Identify (camera) ---------- */
+.screen--dark{background:var(--dark);color:#fff}
+.camera{position:relative;flex:1;display:flex;flex-direction:column;min-height:560px}
+.camera > .feed{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 60%}
+.camera::after{content:"";position:absolute;inset:0;background:rgba(13,32,27,.31)}
+.camera > *:not(.feed){position:relative;z-index:1}
+.modes{height:80px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.segmented{display:flex;height:44px;border:1px solid #d5e0d0;border-radius:var(--r-pill);overflow:hidden}
+.segmented button{display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:500;color:#fff;background:rgba(20,38,29,.67);transition:background .2s}
+.segmented button svg{display:none}
+.segmented button[aria-pressed="true"]{background:var(--butter);color:var(--ink);font-weight:600}
+.segmented button[aria-pressed="true"] svg{display:block}
+.seg-identify{width:124px}.seg-health{width:140px}
+.framing{flex:1;min-height:420px;display:flex;align-items:center;justify-content:center;position:relative}
+.framing .corners{width:307px;max-width:76%;max-height:calc(100% - 40px);height:auto}
+.zoom{position:absolute;left:50%;bottom:75px;transform:translateX(-50%);width:40px;height:40px;border-radius:var(--r-pill);background:rgba(20,38,29,.8);color:var(--butter);font-family:'Inter',var(--text);font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center}
+.detect{position:absolute;left:50%;bottom:24px;transform:translateX(-50%)}
+.capture{background:var(--dark);height:260px;flex-shrink:0;padding:25px 32px 20px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center}
+.capture .tip{display:flex;flex-direction:column;gap:7px;width:100%}
+.shutter-row{display:flex;align-items:center;justify-content:space-between;width:100%}
+.cam-action{width:56px;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px}
+.cam-action:disabled,.shutter:disabled{opacity:.45}
+/* Health scan mode: "which plant are we checking?" */
+.plant-picker{align-self:center;max-width:100%;height:36px;padding:0 14px;border:0;border-radius:var(--r-pill);background:var(--butter);color:var(--ink);font:inherit;font-weight:600;font-size:14px}
+.shutter{border-radius:50%;transition:transform .12s}
+.shutter:active{transform:scale(.94)}
+
+/* ---------- Screen: Plant identified ---------- */
+.facts{display:flex;gap:8px}
+.fact{flex:1;min-width:0;background:var(--mint);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.fact--white{background:#fff}
+.fact .v{font-weight:600;font-size:12px;line-height:1.3}
+.fact .k{font-size:11px;line-height:1.45;color:var(--muted)}
+.field{height:58px;padding:8px 14px;display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.field--outlined{border:1px solid var(--green);border-radius:4px}
+.field--filled{background:var(--bg);border-bottom:1px solid var(--muted);border-radius:4px 4px 0 0}
+.field input,.field select{all:unset;flex:1;min-width:0;font-weight:600;color:var(--ink)}
+.field select{cursor:pointer;-webkit-appearance:none;appearance:none}
+.field .val{display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+/* ---------- Screen: Care plan ---------- */
+.tabs{display:flex;height:48px;border-bottom:1px solid var(--line);flex-shrink:0}
+.tab{flex:1;display:flex;align-items:center;justify-content:center;position:relative;font-weight:600;font-size:14px;color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--green)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:86px;height:3px;background:var(--green);border-radius:3px 3px 0 0}
+.time-picker{height:48px;border:1px solid var(--green);border-radius:8px;padding:0 14px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;color:var(--green)}
+
+/* ---------- Screen: Health check ---------- */
+.score{width:76px;height:76px;border-radius:var(--r-pill);border:4px solid var(--green);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;line-height:normal}
+.score b{font-family:var(--display);font-weight:900;font-size:29px;color:var(--green)}
+.advice{background:#fff;border-radius:20px;padding:16px;display:flex;align-items:flex-start;gap:12px}
+.advice .grow{display:flex;flex-direction:column;gap:7px}
+
+/* ---------- Screen: Discover ---------- */
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{height:36px;padding:0 12px;border:1px solid var(--line);border-radius:var(--r-chip);background:#fff;display:flex;align-items:center;gap:4px;font-weight:600;font-size:12px;color:var(--muted)}
+.chip svg{display:none}
+.chip[aria-checked="true"]{background:var(--mint);border-color:var(--mint);color:var(--green);padding:0 9px}
+.chip[aria-checked="true"] svg{display:block}
+.best{background:var(--mint);border-radius:var(--r-card);padding:10px;display:flex;flex-direction:column;gap:14px;width:100%}
+.best .photo img{border-radius:18px}
+.save-btn{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:var(--r-pill);background:#fff;display:flex;align-items:center;justify-content:center}
+.save-btn[aria-pressed="true"] path,.icon-btn[aria-pressed="true"] path{fill:currentColor}
+.save-btn{color:var(--green)}
+.rec{background:#fff;border-radius:20px;padding:10px;display:flex;align-items:center;gap:12px;width:100%}
+.rec img{width:80px;height:88px;border-radius:14px;flex-shrink:0}
+.rec .grow{display:flex;flex-direction:column;gap:5px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ======================================================================
+ * Potpal additions: things the static design didn't need but a real app does
+ * (real user photos, loading/error states, sign-in form, live camera).
+ * ====================================================================== */
+a{color:inherit;text-decoration:none}
+
+/* Users can own any number of plants, so the crew becomes a 2-column grid */
+.plant-cards{display:grid;grid-template-columns:1fr 1fr}
+.plant-card{text-align:left}
+/* Real photos come in any shape: crop them to the design's proportions */
+.plant-card img{aspect-ratio:160/145;object-fit:cover}
+.photo > img{object-fit:cover}
+.photo--wide > img{aspect-ratio:364/236}
+.photo--banner > img{aspect-ratio:364/204}
+.rec img{object-fit:cover}
+
+/* Live camera preview fills the same spot as the design's still photo */
+.camera > video.feed{background:var(--dark)}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Text inputs on the sign-in screen reuse the outlined field */
+.field input[type="email"],.field input[type="password"],.field input[type="text"]{font-size:16px}
+.btn-primary:disabled{filter:grayscale(.4) opacity(.7);cursor:default}
+.btn-secondary{height:48px;width:100%;border-radius:var(--r-pill);border:1px solid var(--green);color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+
+/* Friendly error / info banners */
+.notice{border-radius:16px;padding:12px 14px;font-size:13px;line-height:1.45;background:var(--butter);color:var(--ink)}
+.notice--error{background:#fbe3dc;color:#7a2e1a}
+
+/* "Thinking…" overlay while Plant.id looks at the photo */
+.busy{position:absolute;inset:0;z-index:10;background:rgba(20,38,29,.82);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:32px}
+.spinner{width:44px;height:44px;border-radius:50%;border:4px solid rgba(255,240,190,.3);border-top-color:var(--butter);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty "leafy crew" */
+.empty{background:#fff;border-radius:var(--r-card);padding:24px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+
+/* Time input styled like the design's time picker */
+.time-picker input{all:unset;width:104px;font-weight:600;color:var(--green)}
+
+/* Small popup menu (care plan "more options") */
+.menu{position:absolute;right:16px;top:56px;z-index:20;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(32,60,45,.18);padding:6px;min-width:160px}
+.menu button{display:block;width:100%;padding:10px 12px;border-radius:8px;font-size:14px}
+.menu button:hover{background:var(--mint)}
+
+/* ---------- Screen: Log in (Figma "Android · Log in") ---------- */
+.brandbar{display:flex;align-items:center;gap:18px;height:64px;padding:0 24px;flex-shrink:0}
+.brandbar .brand{flex:none}
+.login{flex:1;display:flex;flex-direction:column;gap:24px;padding:12px 24px 24px}
+.login-welcome{display:flex;flex-direction:column;gap:18px}
+.login-photos{position:relative;display:flex;gap:10px;height:200px}
+.login-photos > img{height:100%;min-width:0;border-radius:var(--r-card);object-fit:cover}
+.login-photos > img:first-child{width:218px;flex-shrink:0}
+.login-photos > img:nth-child(2){flex:1}
+.welcome-badge{position:absolute;left:12px;bottom:12px;display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:var(--r-chip);background:var(--butter);color:var(--green);font-weight:600;font-size:10px}
+.login-intro{display:flex;flex-direction:column;gap:6px}
+.login-intro h1{font-family:var(--display);font-weight:800;font-size:32px;line-height:1.12}
+.login-intro p{font-size:14px;line-height:1.45;color:var(--muted)}
+.credentials{display:flex;flex-direction:column;gap:18px}
+
+/* Material 3 outlined text field with a floating label */
+.outlined{position:relative;display:flex;align-items:center;gap:12px;height:56px;padding:0 16px;background:var(--bg);border:1px solid var(--line);border-radius:4px;transition:border-color .15s}
+.outlined:focus-within{border-color:var(--green)}
+.outlined .label{position:absolute;left:11px;top:-8px;padding:0 4px;background:var(--bg);font-size:12px;color:var(--muted)}
+.outlined:focus-within .label{color:var(--green)}
+.outlined input{all:unset;flex:1;min-width:0;font-size:15px;color:var(--ink)}
+.outlined input::placeholder{color:var(--muted)}
+.outlined .reveal{width:20px;height:20px;flex-shrink:0;border-radius:4px}
+
+.recovery{height:44px;display:flex;align-items:center;justify-content:flex-end}
+.recovery button{font-weight:600;font-size:13px;color:var(--green)}
+.btn-primary--login{height:54px;font-size:16px}
+.or-divider{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)}
+.or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+.btn-provider{height:52px;width:100%;border-radius:var(--r-pill);background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:9px;font-weight:600;font-size:14px;color:var(--ink)}
+.login-other{display:flex;flex-direction:column;gap:18px}
+.login-footer{display:flex;flex-direction:column;gap:18px;text-align:center}
+.login-footer .switch-mode{font-size:14px;color:var(--ink)}
+.login-footer .switch-mode button{font-weight:700;color:var(--green);text-align:center}
+.legal{font-size:10px;line-height:1.5;color:var(--muted)}
+.legal a{color:var(--green)}
+
+/* ---------- Discover: plant thumbnails (real photo or placeholder) ---------- */
+.plant-thumb{display:block;width:100%;height:100%;object-fit:cover}
+.plant-thumb--empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--mint);color:var(--green);text-align:center;padding:12px}
+.plant-thumb--empty span{font-family:var(--display);font-weight:800;font-size:15px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+/* Keep the sprout its full size even when a long name needs the room */
+.plant-thumb--empty svg{flex-shrink:0}
+/* Small list thumbnails: a smaller name, so three-word names still fit */
+.rec-thumb .plant-thumb--empty{padding:8px;gap:4px}
+.rec-thumb .plant-thumb--empty span{font-size:12px}
+.thumb{display:block;overflow:hidden;background:var(--mint)}
+.thumb--wide{aspect-ratio:344/180;border-radius:18px}
+.thumb--hero{aspect-ratio:364/244;border-radius:var(--r-card)}
+.rec-thumb{width:80px;height:88px;flex-shrink:0;overflow:hidden;border-radius:14px;background:var(--mint)}
+
+/* ---------- Discover: where-to-buy links ---------- */
+.shops{display:flex;flex-direction:column;gap:8px}
+.shop-link{display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border:1px solid var(--line);border-radius:12px;color:var(--ink);transition:background .15s}
+.shop-link:hover{background:var(--mint)}
+
+/* ---------- Health journal ---------- */
+/* Score chart: one green series; grid and axis text stay quiet */
+.score-chart{position:relative}
+.score-chart svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y}
+.score-chart svg:focus-visible{outline:3px solid var(--green);outline-offset:4px;border-radius:6px}
+.score-chart .grid{stroke:var(--line);stroke-width:1}
+.score-chart .axis{fill:var(--muted);font-size:10px;font-family:var(--text)}
+.score-chart .area{fill:var(--green);fill-opacity:.1}
+.score-chart .line{fill:none;stroke:var(--green);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.score-chart .dot{fill:var(--green);stroke:#fff;stroke-width:2}
+.score-chart .crosshair{stroke:var(--muted);stroke-width:1}
+.score-chart .end-label{fill:var(--ink);font-size:12px;font-weight:600;font-family:var(--text)}
+.chart-tip{position:absolute;top:0;transform:translateX(-50%);pointer-events:none;background:var(--dark);color:#fff;border-radius:8px;padding:5px 9px;display:flex;flex-direction:column;align-items:center;line-height:1.2;box-shadow:0 4px 12px rgba(20,38,29,.2)}
+.chart-tip b{font-size:15px}
+.chart-tip span{font-size:11px;color:var(--tip)}
+
+/* Then and now: two photos side by side */
+.then-now{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.then-now figure{background:#fff;border-radius:var(--r-card);padding:8px;display:flex;flex-direction:column;gap:8px}
+.then-now img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:18px}
+.then-now figcaption{display:flex;flex-direction:column;gap:2px;padding:0 6px 4px}
+
+/* One row per check-in */
+.scan-row{display:flex;align-items:center;gap:12px;background:#fff;border-radius:20px;padding:12px}
+.scan-score{width:44px;height:44px;border-radius:var(--r-pill);border:3px solid var(--green);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:900;font-size:16px;color:var(--green);flex-shrink:0}
+
+/* ---------- This week (weather-aware warnings) ---------- */
+.week-strip{list-style:none;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.week-strip li{display:flex;flex-direction:column;gap:3px;padding:8px 0;border-radius:12px;background:var(--bg)}
+.menu .menu-link{display:block;padding:10px 12px;border-radius:8px;font-size:14px}
+.menu .menu-link:hover{background:var(--mint)}
+/* Plant name chips under a grouped warning; each opens that plant */
+.plant-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.plant-chip{height:28px;padding:0 10px;border-radius:var(--r-pill);background:var(--mint);color:var(--green);font-weight:600;font-size:12px;display:inline-flex;align-items:center}
+.plant-chip:hover{background:var(--nav-active)}
+
+/* ---------- Plant names in Indian languages ---------- */
+/* The app's fonts are Latin-only, so Indian scripts use the phone's own fonts
+   (Noto on Android, the system fonts on iPhone). The :lang() rules nudge
+   desktop browsers to a matching font too. */
+.local-names{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.local-name{background:#fff;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0;word-break:break-word}
+.local-names__source{grid-column:1/-1}
+:lang(hi),:lang(mr){font-family:'Noto Sans Devanagari','Kohinoor Devanagari',var(--text)}
+:lang(ta){font-family:'Noto Sans Tamil','Tamil Sangam MN',var(--text)}
+:lang(ml){font-family:'Noto Sans Malayalam','Malayalam Sangam MN',var(--text)}
+
+/* ---------- Wishlist ---------- */
+/* The Discover heart shows how many plants are saved */
+.heart-count{position:relative}
+.heart-count .count{position:absolute;top:6px;right:0;min-width:18px;height:18px;padding:0 5px;border-radius:var(--r-pill);background:var(--green);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+/* One saved plant: the row opens it; the heart and "Buy" sit on the right */
+.wish{background:#fff;border-radius:20px;padding:10px;display:flex;align-items:center;gap:8px}
+.wish-actions{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
+.wish-actions a{padding:2px 6px}
+
+/* ---------- Photo credits (Wikimedia Commons) ---------- */
+.photo-credit{font-size:11px;line-height:1.45;color:var(--muted)}
+.photo-credit a{color:var(--green);text-decoration:underline;text-underline-offset:2px}
+
+/* ---------- Discover: "for you" ordering ---------- */
+/* A quiet label for plants you've never opened */
+.new-tag{display:inline-block;vertical-align:middle;margin-left:4px;padding:2px 7px;border-radius:var(--r-chip);background:var(--butter);color:var(--green);font-family:var(--text);font-weight:600;font-size:10px;line-height:1.5;letter-spacing:0}
+/* "3 plants in your wishlist →" under the suggestions */
+.wish-link{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:var(--mint);color:var(--ink)}

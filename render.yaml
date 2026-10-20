@@ -1,0 +1,48 @@
+# Render "Blueprint": tells Render how to build and run Potpal.
+# In Render: New → Blueprint → pick this repo. It creates one web service that
+# runs the Node server, which also serves the built Vue app (client/dist), so
+# the app and the API share one address.
+#
+# Values marked `sync: false` are secrets or per-project settings: Render asks
+# you to paste them when you create the Blueprint, and they never live in git.
+
+services:
+  - type: web
+    name: potpal-greenhouse
+    runtime: node
+    region: singapore # closest Render region to India
+    plan: free # sleeps after 15 min idle; the next visit takes ~30-60 s to wake it
+    branch: main
+    # Installs root, client and server (see "postinstall"), then builds the Vue app
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+
+      # Supabase cloud: Project Settings → API. The server and the app use the
+      # same URL and anon key. The VITE_ ones are baked into the app at build
+      # time (they're public by design; RLS protects the data).
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+
+      # Plant identification (keys stay on the server)
+      - key: PLANTNET_API_KEY
+        sync: false
+      - key: PLANT_ID_API_KEY
+        sync: false
+      # Test switch: "false" skips Plant.id (saves credits). Set to "true" at launch.
+      - key: PLANT_ID_ENABLED
+        value: "false"
+
+      # The app's own address (for CORS). If Render gives the service a
+      # different URL, change it here.
+      - key: CLIENT_ORIGIN
+        value: https://potpal-greenhouse.onrender.com

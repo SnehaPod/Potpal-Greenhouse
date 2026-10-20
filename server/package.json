@@ -1,0 +1,17 @@
+{
+  "name": "potpal-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file=.env index.js",
+    "start": "node --env-file-if-exists=.env index.js",
+    "test": "node --test \"lib/**/*.test.js\""
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "multer": "^2.0.0"
+  }
+}
