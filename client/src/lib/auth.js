@@ -6,6 +6,7 @@
 
 import { reactive, computed } from 'vue'
 import { supabase } from './supabase.js'
+import { disablePush } from './push.js'
 
 export const auth = reactive({
   session: null,
@@ -57,6 +58,8 @@ export async function signUp(email, password, firstName) {
 }
 
 export async function signOut() {
+  // Stop this phone's notifications first, so the next person to sign in here doesn't get them
+  await disablePush().catch(() => {})
   await supabase.auth.signOut()
 }
 

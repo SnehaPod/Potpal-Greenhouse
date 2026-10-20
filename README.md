@@ -56,7 +56,7 @@ The screens follow the PotPal Figma design.
 | Weekly health check | `/plants/:id/health` (`?scan=<id>` for a past one) | live: latest or chosen scan |
 | Discover | `/discover` | live: plant catalogue |
 | Plant match | `/discover/:slug` | live: catalogue + shopping links |
-| Your weather | `/location` | live: Open-Meteo city search |
+| Your weather | `/location` | live: Open-Meteo city search (from the phone) |
 | Saved plants (wishlist) | `/wishlist` | live: hearted Discover plants |
 | Photo credits | `/credits` | live: who took each Commons photo |
 
@@ -96,6 +96,17 @@ one, and the care plan shows a note explaining the change.
 The rules are in `server/lib/forecast.js` and the thresholds sit together at
 the top of that file. Weather comes from [Open-Meteo](https://open-meteo.com),
 which is free and needs no API key. Locations are stored rounded to about 1 km.
+
+Open-Meteo's free limit is per IP address. On shared hosting such as Render's
+free plan, many apps share one IP, so the limit can run out before Potpal has
+asked for anything. So:
+- **Forecasts fall back to [MET Norway](https://api.met.no)**, which is also
+  free and keyless. We use its temperatures and cloud cover, work out daylight
+  from the date and latitude, and estimate sunshine from the clouds. The card
+  credits whichever source was used, and `server/lib/weather.test.js` tests the
+  conversion.
+- **City search runs on the phone**, calling Open-Meteo's geocoder directly
+  from the phone's own IP.
 
 **Names in Indian languages.** The identified result, the care plan and the
 Discover detail show the plant's name in Hindi, Marathi, Tamil and Malayalam.
@@ -381,8 +392,64 @@ The APK shows the live site, so new deploys reach it without a new APK. The
 PWA parts it relies on:
 - `client/public/manifest.webmanifest`, with the PNG icons, including a
   maskable one;
-- `client/public/sw.js`, a tiny service worker that only shows
-  `offline.html` when there's no connection.
+- `client/public/sw.js`, a small service worker that shows
+  `offline.html` when there's no connection, and shows notifications.
+
+## Notifications (watering reminders and weather warnings)
+
+Potpal sends two kinds of notification to phones that have said yes:
+
+- **Watering reminders.** At each plant's "Remind me at" time, on the days it's
+  due, in the phone's own time zone. A user's thirsty plants share one
+  notification ("Time to water Miso and Mochi 💧"). Each plant is reminded at
+  most once a day.
+- **Weather warnings.** Hot days (30 °C or more) and cold nights (5 °C or less)
+  in the week ahead, for people with a saved place. At most once per kind every
+  3 days, and never before 08:00. A darker week stays in the app only. There's
+  a switch on the Weather screen.
+
+**How it works.**
+1. The app asks permission and saves this phone's push "subscription", plus
+   its time zone. This happens from the Home card, the care plan, or the
+   Weather switch (`client/src/lib/push.js`).
+2. Every 15 minutes a Supabase scheduled job (pg_cron, migration `010`) calls
+   `POST /api/cron/reminders` with a secret.
+3. The server reads who has a phone subscribed through two database functions
+   that only answer to that secret (`push_jobs`, `record_push_results`). It
+   decides who is due with the rules in `server/lib/reminders.js` (tested in
+   `reminders.test.js`), and sends with `web-push`.
+4. `client/public/sw.js` shows the notification. Tapping it opens the plant, or
+   Home.
+
+No service-role key is involved. The secret lives in Render (`CRON_SECRET`)
+and in Supabase Vault (`potpal_cron_secret`), never in git. The PWABuilder APK
+already has Android's notification permission, so no new APK is needed.
+
+**One-time setup, per environment.**
+1. Inside `server/`, run `npx web-push generate-vapid-keys`, and make a secret
+   with `openssl rand -hex 32`.
+2. Put `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `CRON_SECRET` in
+   `server/.env` (locally) or Render → Environment (live).
+3. In the Supabase SQL editor (or with `psql` locally):
+   ```sql
+   select vault.create_secret('https://potpal-greenhouse.onrender.com', 'potpal_api_url');
+   select vault.create_secret('<the CRON_SECRET value>', 'potpal_cron_secret');
+   ```
+   Locally, the URL is `http://host.docker.internal:3000`, because the
+   database runs in Docker.
+4. Run `npx supabase db push` (or `migration up --local`) for migration `010`.
+
+**Trying it.**
+- Turn notifications on in a care plan, then tap **Send a test**.
+- To see what the next run would send without sending it:
+  ```bash
+  curl -X POST -H "Authorization: Bearer $CRON_SECRET" "http://localhost:3000/api/cron/reminders?dryRun=1"
+  ```
+- The job's history is in `cron.job_run_details`, and its web requests are in
+  `net._http_response`.
+
+On the free Render plan, the 15-minute call keeps the server awake. That uses
+about 744 of the 750 free hours a month, and means no cold starts.
 
 ## Project layout
 
@@ -404,6 +471,7 @@ client/src/
     wishlist.js   saved plants, shared by every heart in the app
     health.js     health journal: trend (better / worse / steady) and labels
     weather.js    which icon goes with each weather warning
+    push.js       notifications on this phone: ask, subscribe, test, unsubscribe
   assets/main.css the design system (colours, type, components)
 client/public/
   manifest.webmanifest, icon-*.png   what Android needs to install Potpal
@@ -416,8 +484,10 @@ server/
   lib/plantId.js        Plant.id requests (identify + health) and turning the answers into simple shapes
   lib/photos.js         photo upload middleware + saving to the plant-photos bucket
   lib/supabase.js       Supabase client that acts as the signed-in user
-  lib/weather.js        Open-Meteo: city search + the next 7 days (cached 3 hours)
+  lib/weather.js        the next 7 days: Open-Meteo, or MET Norway as a backup (cached 3 hours)
   lib/forecast.js       the "This week" rules: warnings + watering adjustment
+  lib/reminders.js      who gets a notification right now (watering + hot / cold)
+  lib/push.js           sending Web Push notifications (VAPID keys)
   lib/forecast.test.js  tests for those rules (npm test)
   lib/weatherFixtures.js  made-up weeks for the tests and for local trying-out
   lib/names.js          plant names in Indian languages (Potpal's list, then Wikidata)
@@ -428,6 +498,8 @@ server/
   lib/identify.test.js + plantnet.test.js   tests for the fallback (fakes, no network)
   routes/names.js       GET /api/names
   routes/wishlist.js    /api/wishlist: list, save, remove
+  routes/push.js        /api/push: key, save / forget this phone, test
+  routes/cron.js        POST /api/cron/reminders (the 15-minute job; secret only)
   routes/identify.js    POST /api/identify
   routes/plants.js      /api/plants CRUD + /water (weather-adjusted if "Let AI adjust" is on)
   routes/health.js      /api/plants/:id/health: list, new scan, /latest, /:scanId
@@ -467,14 +539,19 @@ All endpoints need `Authorization: Bearer <supabase access token>`.
 | `GET` | `/api/catalog/:slug` | one catalogue plant |
 | `POST` | `/api/catalog/:slug/view` | count one visit to a plant (204; 404 if no such plant) |
 | `GET` | `/api/location` | my saved place, or `null` |
-| `GET` | `/api/location/search?q=` | city search → `[{ name, latitude, longitude }]` |
 | `PUT` | `/api/location` | save `{ place_name, latitude, longitude }` (rounded to ~1 km) |
+| `PATCH` | `/api/location` | `{ weather_alerts_on }`: hot / cold notifications on or off |
 | `DELETE` | `/api/location` | forget my place |
 | `GET` | `/api/forecast` | `{ place: null }`, or `{ place, days, alerts, groups }` for this week (`alerts` per plant, `groups` per kind of weather) |
 | `GET` | `/api/names?species=&common=` | `{ names: { hi, mr, ta, ml }, source: 'potpal' \| 'wikidata' \| null }` |
 | `GET` | `/api/wishlist` | my saved plants, newest first (catalogue rows + `saved_at`) |
 | `PUT` | `/api/wishlist/:slug` | save a plant (saving twice is fine; unknown plant → 404) |
 | `DELETE` | `/api/wishlist/:slug` | remove a saved plant |
+| `GET` | `/api/push/key` | the public key phones subscribe with |
+| `POST` | `/api/push/subscriptions` | save this phone: `{ subscription, timeZone }` |
+| `DELETE` | `/api/push/subscriptions` | forget this phone: `{ endpoint }` |
+| `POST` | `/api/push/test` | send "Test from Potpal" to my phones |
+| `POST` | `/api/cron/reminders` | send the notifications due now (`Authorization: Bearer <CRON_SECRET>`; `?dryRun=1` to preview) |
 
 A saved scan looks like this (`score` is Plant.id's "is healthy" probability × 100):
 
@@ -491,9 +568,6 @@ A saved scan looks like this (`score` is Plant.id's "is healthy" probability × 
 
 ## Not built yet
 
-- Push notifications, for watering reminders and for "This week" warnings.
-  The settings are saved, and warnings show in the app, but nothing is sent
-  to your phone yet.
 - Remembering which feel-better steps were ticked off on a health check.
 - Live shopping listings (titles, prices, thumbnails). Discover links to each
   shop's search instead.

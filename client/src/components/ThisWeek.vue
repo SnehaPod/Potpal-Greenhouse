@@ -50,7 +50,8 @@ const shortDay = (date) => new Date(`${date}T12:00:00`).toLocaleDateString('en-U
       <div class="row" style="justify-content: space-between">
         <div class="stack" style="gap: 3px">
           <h2 id="week-h" class="d" style="font-size: 20px">This week</h2>
-          <p class="t12 muted">{{ forecast.place }}</p>
+          <!-- The place, and whose forecast it is (MET Norway asks to be credited) -->
+          <p class="t12 muted">{{ forecast.place }}<template v-if="forecast.source"> · {{ forecast.source }}</template></p>
         </div>
         <RouterLink to="/location" class="semi t12 green">Change</RouterLink>
       </div>

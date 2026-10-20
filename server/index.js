@@ -12,6 +12,8 @@
 //   GET /api/forecast     → "This week": weather + early warnings per plant
 //   GET /api/names        → a plant's name in Hindi, Marathi, Tamil, Malayalam
 //   /api/wishlist…        → Discover plants the user has saved
+//   /api/push…            → notifications on this phone (subscribe, test)
+//   POST /api/cron/reminders → the scheduled job that sends due notifications
 //
 // In production it also serves the built Vue app (client/dist), so the app and
 // the API share one address.
@@ -31,6 +33,8 @@ import locationRoutes from './routes/location.js'
 import forecastRoutes from './routes/forecast.js'
 import namesRoutes from './routes/names.js'
 import wishlistRoutes from './routes/wishlist.js'
+import pushRoutes from './routes/push.js'
+import cronRoutes from './routes/cron.js'
 import { plantIdEnabled } from './lib/identify.js'
 
 const app = express()
@@ -42,6 +46,9 @@ app.use(express.json())
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
+// The scheduled reminder job: checks its own secret instead of a signed-in user
+app.use('/api/cron', cronRoutes)
+
 // Everything below needs a signed-in user
 app.use('/api/identify', requireUser, identifyRoutes)
 app.use('/api/plants/:id/health', requireUser, healthRoutes)
@@ -51,6 +58,7 @@ app.use('/api/location', requireUser, locationRoutes)
 app.use('/api/forecast', requireUser, forecastRoutes)
 app.use('/api/names', requireUser, namesRoutes)
 app.use('/api/wishlist', requireUser, wishlistRoutes)
+app.use('/api/push', requireUser, pushRoutes)
 
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }))
 

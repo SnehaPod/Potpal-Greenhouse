@@ -10,7 +10,9 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Icon from '../components/Icon.vue'
 import AppBar from '../components/AppBar.vue'
-import { getLocation, searchPlaces, saveLocation, clearLocation } from '../lib/api.js'
+import ToggleSwitch from '../components/ToggleSwitch.vue'
+import { getLocation, searchPlaces, saveLocation, clearLocation, setWeatherAlerts } from '../lib/api.js'
+import { push, refreshPush, enablePush } from '../lib/push.js'
 
 const router = useRouter()
 
@@ -22,6 +24,7 @@ const busy = ref(false)
 const error = ref('')
 
 onMounted(async () => {
+  refreshPush()
   try {
     current.value = await getLocation()
   } catch (e) {
@@ -73,6 +76,20 @@ function useCurrentLocation() {
   )
 }
 
+/** Hot / cold notifications on or off. Turning them on also turns on this phone's notifications. */
+async function toggleWeather(on) {
+  const before = current.value.weather_alerts_on
+  current.value.weather_alerts_on = on
+  error.value = ''
+  try {
+    current.value = await setWeatherAlerts(on)
+    if (on && push.status === 'off') await enablePush()
+  } catch (e) {
+    current.value.weather_alerts_on = before
+    error.value = e.message
+  }
+}
+
 async function remove() {
   await run(async () => {
     await clearLocation()
@@ -109,6 +126,24 @@ async function run(action) {
         <p class="d" style="font-size: 20px">{{ current.place_name }}</p>
       </div>
 
+      <!-- Weather notifications (the "This week" card always shows the warnings) -->
+      <div v-if="current" class="row" style="gap: 12px">
+        <div class="grow stack" style="gap: 4px">
+          <p class="semi t14">Warn me about hot days and cold nights</p>
+          <p class="t12 lh muted">
+            A notification when the week ahead could stress your plants, at most once every 3 days.
+            <template v-if="current.weather_alerts_on && push.status === 'blocked'">
+              Notifications are blocked for Potpal on this phone: allow them in Settings → Apps → Potpal.
+            </template>
+          </p>
+        </div>
+        <ToggleSwitch
+          :model-value="current.weather_alerts_on"
+          label="Warn me about hot days and cold nights"
+          @update:model-value="toggleWeather"
+        />
+      </div>
+
       <label class="outlined">
         <span class="label">{{ current ? 'Change your city' : 'Your city' }}</span>
         <input
@@ -137,7 +172,8 @@ async function run(action) {
       <button v-if="current" class="link" :disabled="busy" @click="remove">Remove my location</button>
 
       <p class="footnote">
-        We keep your place rounded to about 1 km and only use it to look up the weather. Forecasts by Open-Meteo.
+        We keep your place rounded to about 1 km and only use it to look up the weather. City search and forecasts by
+        Open-Meteo, or MET Norway when Open-Meteo is busy.
       </p>
     </main>
   </section>

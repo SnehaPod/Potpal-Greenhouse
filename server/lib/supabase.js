@@ -24,3 +24,14 @@ export function supabaseForUser(accessToken) {
     auth: { persistSession: false, autoRefreshToken: false },
   })
 }
+
+/**
+ * A client with no user at all. Only the reminder job uses it, to call the two
+ * secret-locked functions in migration 010 (push_jobs, record_push_results).
+ * As "anon" it can't read any table directly: RLS sees no user.
+ */
+export function supabaseAnon() {
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}

@@ -1,9 +1,10 @@
 // GET /api/forecast: "This week" for the signed-in user.
 //
 //   { place: null }                     no location saved yet
-//   { place, days: [...], alerts: [...], groups: [...] }
+//   { place, source, days: [...], alerts: [...], groups: [...] }
 //
-// days come from Open-Meteo (lib/weather.js); alerts from the rules in
+// days come from Open-Meteo, or MET Norway as a backup (lib/weather.js; source
+// says which, for the credit on the card); alerts from the rules in
 // lib/forecast.js, applied to every plant in the user's crew. alerts are one
 // per plant (for each care plan); groups combine them per kind of weather
 // (for the home screen).
@@ -28,6 +29,7 @@ router.get('/', async (req, res) => {
   const alerts = buildAlerts(plants, week)
   res.json({
     place: settings.place_name,
+    source: week.source ?? null, // "Open-Meteo" or "MET Norway"
     days: week.days,
     alerts,
     groups: groupAlerts(alerts),

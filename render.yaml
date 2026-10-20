@@ -42,6 +42,18 @@ services:
       - key: PLANT_ID_ENABLED
         value: "false"
 
+      # Push notifications (see README → Notifications). Generate the keys once with
+      # `npx web-push generate-vapid-keys`; CRON_SECRET must match the Supabase
+      # Vault secret potpal_cron_secret, which the 15-minute reminder job sends.
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+      - key: VAPID_SUBJECT
+        value: https://potpal-greenhouse.onrender.com
+
       # The app's own address (for CORS). If Render gives the service a
       # different URL, change it here.
       - key: CLIENT_ORIGIN

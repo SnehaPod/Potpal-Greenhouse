@@ -14,6 +14,7 @@ import LocalNames from '../components/LocalNames.vue'
 import { getPlant, updatePlant, waterPlant, deletePlant, getForecast } from '../lib/api.js'
 import { ALERT_ICONS } from '../lib/weather.js'
 import { waterStatus, waterEvery, wateredToday } from '../lib/plants.js'
+import { push, refreshPush, enablePush, sendTestPush } from '../lib/push.js'
 
 const props = defineProps({ id: { type: String, required: true } })
 const router = useRouter()
@@ -28,7 +29,12 @@ const tab = ref(useRoute().query.tab === 'journal' ? 'journal' : 'care')
 // This week's weather warnings for this plant (empty if no location is set)
 const alerts = ref([])
 
+// Notifications on this phone (see lib/push.js)
+const pushBusy = ref(false)
+const pushNote = ref('')
+
 onMounted(async () => {
+  refreshPush()
   try {
     plant.value = await getPlant(props.id)
   } catch (e) {
@@ -70,6 +76,37 @@ async function save(changes) {
   } catch (e) {
     plant.value = before
     error.value = e.message
+  }
+}
+
+/** Reminders on? Then make sure this phone can actually show them. */
+async function toggleReminders(on) {
+  await save({ reminders_on: on })
+  if (on && push.status === 'off') await turnOnPush()
+}
+
+async function turnOnPush() {
+  pushBusy.value = true
+  pushNote.value = ''
+  try {
+    await enablePush()
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    pushBusy.value = false
+  }
+}
+
+async function testPushNow() {
+  pushBusy.value = true
+  pushNote.value = 'Sending…'
+  try {
+    await sendTestPush()
+    pushNote.value = 'Sent! It should arrive in a few seconds.'
+  } catch (e) {
+    pushNote.value = e.message
+  } finally {
+    pushBusy.value = false
   }
 }
 
@@ -183,7 +220,7 @@ async function remove() {
             <ToggleSwitch
               :model-value="plant.reminders_on"
               label="Push reminders"
-              @update:model-value="save({ reminders_on: $event })"
+              @update:model-value="toggleReminders"
             />
           </div>
 
@@ -200,6 +237,25 @@ async function remove() {
               />
             </span>
           </div>
+
+          <!-- Can this phone actually show the reminders? -->
+          <template v-if="plant.reminders_on">
+            <button v-if="push.status === 'off'" class="btn-secondary" :disabled="pushBusy" @click="turnOnPush">
+              <Icon name="bell" :size="18" color="#286344" />&nbsp;Turn on notifications on this phone
+            </button>
+            <p v-else-if="push.status === 'blocked'" class="t12 lh muted">
+              Notifications are blocked for Potpal on this phone. To allow them, open your phone's Settings → Apps →
+              Potpal → Notifications.
+            </p>
+            <p v-else-if="push.status === 'unsupported'" class="t12 lh muted">
+              This browser can't show notifications. Install the Potpal app to get reminders.
+            </p>
+            <div v-else-if="push.status === 'on'" class="row" style="justify-content: space-between">
+              <p class="t12 lh muted">Notifications are on for this phone.</p>
+              <button class="green semi t13" :disabled="pushBusy" @click="testPushNow">Send a test</button>
+            </div>
+            <p v-if="pushNote" class="t12 lh muted" role="status">{{ pushNote }}</p>
+          </template>
 
           <div class="divider"></div>
 

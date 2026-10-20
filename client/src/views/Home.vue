@@ -13,6 +13,7 @@ import BottomNav from '../components/BottomNav.vue'
 import { auth, signOut } from '../lib/auth.js'
 import { listPlants, waterPlant } from '../lib/api.js'
 import { isDueToday, wateredToday, todayLabel } from '../lib/plants.js'
+import { push, refreshPush, enablePush } from '../lib/push.js'
 
 const plants = ref([])
 const loading = ref(true)
@@ -20,6 +21,7 @@ const error = ref('')
 const showMenu = ref(false)
 
 onMounted(async () => {
+  refreshPush()
   try {
     plants.value = await listPlants()
   } catch (e) {
@@ -35,6 +37,33 @@ const doneCount = computed(() => rituals.value.filter(wateredToday).length)
 
 // The health prompt suggests the first plant in the crew
 const firstPlant = computed(() => plants.value[0])
+
+// "Get a nudge when your plants are thirsty?" Asked once per phone, once there are plants.
+const ASKED_KEY = 'potpal:push-asked'
+const asked = ref(readAsked())
+function readAsked() {
+  try {
+    return localStorage.getItem(ASKED_KEY) === '1'
+  } catch {
+    return false // storage blocked: just ask
+  }
+}
+const showPushAsk = computed(() => plants.value.length > 0 && push.status === 'off' && !asked.value)
+
+async function answerPushAsk(yes) {
+  asked.value = true
+  try {
+    localStorage.setItem(ASKED_KEY, '1')
+  } catch {
+    /* not remembered: fine */
+  }
+  if (!yes) return
+  try {
+    await enablePush()
+  } catch (e) {
+    error.value = e.message
+  }
+}
 
 async function markWatered(plant, checked) {
   // Unticking doesn't "un-water" a plant, so only act on a tick
@@ -97,6 +126,21 @@ async function markWatered(plant, checked) {
             />
           </div>
         </template>
+      </section>
+
+      <!-- Notifications: asked once, after the first plant -->
+      <section v-if="showPushAsk" class="card card--mint" style="gap: 12px" aria-labelledby="push-ask-h">
+        <div class="row" style="gap: 12px; align-items: flex-start">
+          <Icon name="bell" :size="26" color="#286344" />
+          <div class="grow stack" style="gap: 5px">
+            <h2 id="push-ask-h" class="d" style="font-size: 19px; line-height: 1.15">Get a nudge when your plants are thirsty?</h2>
+            <p class="t13 lh muted">One notification on watering days, at the time you pick in each care plan.</p>
+          </div>
+        </div>
+        <div class="row" style="gap: 10px">
+          <button class="btn-primary" style="flex: 1; height: 48px" @click="answerPushAsk(true)">Turn on</button>
+          <button class="btn-secondary" style="flex: 1" @click="answerPushAsk(false)">Not now</button>
+        </div>
       </section>
 
       <!-- This week: local weather + early warnings (once there's a crew to warn about) -->

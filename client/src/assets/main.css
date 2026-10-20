@@ -108,8 +108,11 @@ img,svg{display:block}
 .add-plant{height:48px;display:flex;align-items:center;gap:6px;font-weight:600;font-size:13px;color:var(--green)}
 
 /* ---------- Screen: Identify (camera) ---------- */
-.screen--dark{background:var(--dark);color:#fff}
-.camera{position:relative;flex:1;display:flex;flex-direction:column;min-height:560px}
+/* The camera screen is exactly one screen tall: the viewfinder shrinks to fit,
+   so the shutter is always on screen, even on shorter phones */
+.screen--dark{background:var(--dark);color:#fff;height:100dvh;overflow:hidden}
+@media (min-width:560px){.screen--dark{height:calc(100dvh - 64px)}}
+.camera{position:relative;flex:1;display:flex;flex-direction:column;min-height:0}
 .camera > .feed{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 60%}
 .camera::after{content:"";position:absolute;inset:0;background:rgba(13,32,27,.31)}
 .camera > *:not(.feed){position:relative;z-index:1}
@@ -120,11 +123,18 @@ img,svg{display:block}
 .segmented button[aria-pressed="true"]{background:var(--butter);color:var(--ink);font-weight:600}
 .segmented button[aria-pressed="true"] svg{display:block}
 .seg-identify{width:124px}.seg-health{width:140px}
-.framing{flex:1;min-height:420px;display:flex;align-items:center;justify-content:center;position:relative}
+.framing{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
 .framing .corners{width:307px;max-width:76%;max-height:calc(100% - 40px);height:auto}
 .zoom{position:absolute;left:50%;bottom:75px;transform:translateX(-50%);width:40px;height:40px;border-radius:var(--r-pill);background:rgba(20,38,29,.8);color:var(--butter);font-family:'Inter',var(--text);font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center}
 .detect{position:absolute;left:50%;bottom:24px;transform:translateX(-50%)}
-.capture{background:var(--dark);height:260px;flex-shrink:0;padding:25px 32px 20px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center}
+.capture{background:var(--dark);flex-shrink:0;padding:22px 32px max(16px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+/* Shorter screens (most phones once the status and navigation bars take their share) */
+@media (max-height:780px){
+  .modes{height:60px}
+  .capture{padding-top:16px;gap:12px}
+  .zoom{bottom:62px}
+  .detect{bottom:16px}
+}
 .capture .tip{display:flex;flex-direction:column;gap:7px;width:100%}
 .shutter-row{display:flex;align-items:center;justify-content:space-between;width:100%}
 .cam-action{width:56px;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px}
