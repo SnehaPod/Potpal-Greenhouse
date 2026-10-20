@@ -20,7 +20,8 @@ import { getWeek } from '../lib/weather.js'
 const router = Router()
 
 router.post('/reminders', async (req, res) => {
-  const secret = process.env.CRON_SECRET
+  // .trim(): a space or line break pasted into Render's settings shouldn't lock the job out
+  const secret = process.env.CRON_SECRET?.trim()
   if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
     return res.status(401).json({ error: 'Not allowed.' })
   }

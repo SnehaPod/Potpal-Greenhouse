@@ -14,8 +14,10 @@
 
 import webpush from 'web-push'
 
-const { VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY } = process.env
-const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'https://potpal-greenhouse.onrender.com'
+// .trim(): stray spaces or line breaks from pasting the keys into Render shouldn't break them
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY?.trim()
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY?.trim()
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT?.trim() || 'https://potpal-greenhouse.onrender.com'
 
 export const pushConfigured = Boolean(VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY)
 if (pushConfigured) webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
