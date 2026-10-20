@@ -59,6 +59,11 @@ app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }))
 const appDir = path.join(import.meta.dirname, '../client/dist')
 if (existsSync(appDir)) {
   app.use(express.static(appDir))
+  // express.static skips dot-folders, but Android looks for
+  // /.well-known/assetlinks.json to trust the Potpal app (see README → Deploying).
+  // Anything missing in there is a plain 404, not the app.
+  app.use('/.well-known', express.static(path.join(appDir, '.well-known')))
+  app.use('/.well-known', (_req, res) => res.status(404).end())
   // Any other page (e.g. /discover/snake-plant) is a Vue route: send the app
   // and let Vue Router show the right screen.
   app.get('/{*page}', (_req, res) => res.sendFile(path.join(appDir, 'index.html')))
