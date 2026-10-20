@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.radix.potpal",
+        "sha256_cert_fingerprints": ["57:69:93:AA:42:7C:96:5E:FF:EF:06:29:DD:28:6E:8B:88:7F:AE:DB:BB:DB:43:88:F0:DB:AD:C3:D6:9A:0A:43"]
+      }
+    }]
