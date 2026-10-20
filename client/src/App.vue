@@ -21,6 +21,12 @@ watch(
 
 <template>
   <div class="app">
-    <RouterView />
+    <!-- Each new screen fades up gently ("page" in main.css → Motion). Keyed by path,
+         so going from one plant to another counts as a new screen too. -->
+    <RouterView v-slot="{ Component, route: current }">
+      <Transition name="page">
+        <component :is="Component" :key="current.path" />
+      </Transition>
+    </RouterView>
   </div>
 </template>

@@ -123,9 +123,12 @@ async function onPhoto(event) {
         {{ busy ? 'Reading the light…' : result ? 'Measure again' : 'Take the photo' }}
       </button>
 
-      <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
+      <Transition name="rise">
+        <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
+      </Transition>
 
-      <div v-if="result" class="stack" style="gap: 6px" role="status">
+      <Transition name="rise">
+      <div v-if="result" :key="result.lux" class="stack" style="gap: 6px" role="status">
         <p class="semi t14">
           About {{ result.lux.toLocaleString() }} lux: {{ result.level.label
           }}<template v-if="result.window">, from a {{ result.window.facing }}</template>.
@@ -135,6 +138,7 @@ async function onPhoto(event) {
         <p v-if="result.window?.note" class="t12 lh muted">{{ result.window.note }}</p>
         <p v-if="result.caveat" class="t12 lh" style="color: #a26830">{{ result.caveat }}</p>
       </div>
+      </Transition>
 
       <button type="button" class="link" @click="close">Done</button>
     </template>

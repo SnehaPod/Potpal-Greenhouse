@@ -65,11 +65,15 @@ async function answerPushAsk(yes) {
   }
 }
 
+// Plants watered just now get a little "pop" on their tick (main.css → .celebrate)
+const justWatered = ref(new Set())
+
 /** Tick: watered. Untick: undo it (tapped by mistake). */
 async function markWatered(plant, checked) {
   if (checked === wateredToday(plant)) return // already that way
   try {
     const updated = checked ? await waterPlant(plant.id) : await unwaterPlant(plant.id)
+    justWatered.value = new Set(checked ? [plant.id] : [])
     plants.value = plants.value.map((p) => (p.id === updated.id ? updated : p))
   } catch (e) {
     error.value = e.message
@@ -109,7 +113,7 @@ async function markWatered(plant, checked) {
         </div>
         <template v-for="(plant, i) in rituals" :key="plant.id">
           <div v-if="i > 0" class="divider"></div>
-          <div class="row task">
+          <div class="row task" :class="{ celebrate: justWatered.has(plant.id) && wateredToday(plant) }">
             <span class="symbol" :class="{ 'symbol--mint': wateredToday(plant) }">
               <Icon :name="wateredToday(plant) ? 'tick' : 'drop'" :size="23" color="#286344" />
             </span>

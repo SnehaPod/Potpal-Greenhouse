@@ -148,52 +148,56 @@ async function heart(slug) {
           <span class="semi t12 muted">{{ matches.length }} matches</span>
         </div>
 
-        <!-- Best match: the big card -->
-        <div class="best">
-          <div class="photo">
-            <div class="thumb thumb--wide">
-              <PlantThumb :src="best.image_url" :alt="best.common_name" :name="best.common_name" />
+        <!-- Best match: the big card. A new best match fades in when the ranking changes. -->
+        <Transition name="rise" mode="out-in">
+          <div :key="best.slug" class="best">
+            <div class="photo">
+              <div class="thumb thumb--wide">
+                <PlantThumb :src="best.image_url" :alt="best.common_name" :name="best.common_name" />
+              </div>
+              <span class="overlay badge badge--butter" style="left: 10px; top: 10px"><Icon name="sparkle" :size="16" />{{ best.match }}% match</span>
+              <button
+                class="save-btn"
+                :aria-label="`Save ${best.common_name}`"
+                :aria-pressed="isSaved(best.slug)"
+                @click="heart(best.slug)"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M2.96748 6.38385C2.33689 7.30078 1.99929 8.38741 1.99927 9.50022C1.99927 11.8002 3.49938 13.5003 4.9995 15.0003L10.5079 20.3323C10.697 20.544 10.9289 20.7129 11.1883 20.828C11.4476 20.9432 11.7286 21.0018 12.0123 21C12.2961 20.9982 12.5762 20.936 12.8341 20.8176C13.092 20.6992 13.3218 20.5273 13.5082 20.3133L19.0006 15.0003C20.5007 13.5003 22.0008 11.7902 22.0008 9.50022C22.0061 8.38496 21.6716 7.29454 21.0418 6.37409C20.4121 5.45363 19.5169 4.74679 18.4754 4.34765C17.4339 3.94851 16.2956 3.876 15.2119 4.13977C14.1282 4.40353 13.1506 4.99107 12.4091 5.82418C12.3567 5.88019 12.2933 5.92485 12.223 5.95538C12.1526 5.98591 12.0767 6.00167 12 6.00167C11.9233 6.00167 11.8475 5.98591 11.7771 5.95538C11.7067 5.92485 11.6434 5.88019 11.591 5.82418C10.8472 4.99645 9.86974 4.41381 8.7878 4.15321C7.70586 3.89261 6.57032 3.9663 5.53115 4.36457C4.49198 4.76283 3.59806 5.46692 2.96748 6.38385Z"
+                    :fill="isSaved(best.slug) ? 'currentColor' : 'none'"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
+                </svg>
+              </button>
             </div>
-            <span class="overlay badge badge--butter" style="left: 10px; top: 10px"><Icon name="sparkle" :size="16" />{{ best.match }}% match</span>
-            <button
-              class="save-btn"
-              :aria-label="`Save ${best.common_name}`"
-              :aria-pressed="isSaved(best.slug)"
-              @click="heart(best.slug)"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M2.96748 6.38385C2.33689 7.30078 1.99929 8.38741 1.99927 9.50022C1.99927 11.8002 3.49938 13.5003 4.9995 15.0003L10.5079 20.3323C10.697 20.544 10.9289 20.7129 11.1883 20.828C11.4476 20.9432 11.7286 21.0018 12.0123 21C12.2961 20.9982 12.5762 20.936 12.8341 20.8176C13.092 20.6992 13.3218 20.5273 13.5082 20.3133L19.0006 15.0003C20.5007 13.5003 22.0008 11.7902 22.0008 9.50022C22.0061 8.38496 21.6716 7.29454 21.0418 6.37409C20.4121 5.45363 19.5169 4.74679 18.4754 4.34765C17.4339 3.94851 16.2956 3.876 15.2119 4.13977C14.1282 4.40353 13.1506 4.99107 12.4091 5.82418C12.3567 5.88019 12.2933 5.92485 12.223 5.95538C12.1526 5.98591 12.0767 6.00167 12 6.00167C11.9233 6.00167 11.8475 5.98591 11.7771 5.95538C11.7067 5.92485 11.6434 5.88019 11.591 5.82418C10.8472 4.99645 9.86974 4.41381 8.7878 4.15321C7.70586 3.89261 6.57032 3.9663 5.53115 4.36457C4.49198 4.76283 3.59806 5.46692 2.96748 6.38385Z"
-                  :fill="isSaved(best.slug) ? 'currentColor' : 'none'"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                />
-              </svg>
-            </button>
-          </div>
-          <RouterLink :to="`/discover/${best.slug}`" class="row" style="gap: 10px; padding: 0 6px 8px; width: 100%">
-            <span class="grow stack" style="gap: 5px">
-              <span class="d" style="font-size: 23px; line-height: 1.15">
-                {{ best.common_name }} <span v-if="best.isNew" class="new-tag">New to you</span>
+            <RouterLink :to="`/discover/${best.slug}`" class="row" style="gap: 10px; padding: 0 6px 8px; width: 100%">
+              <span class="grow stack" style="gap: 5px">
+                <span class="d" style="font-size: 23px; line-height: 1.15">
+                  {{ best.common_name }} <span v-if="best.isNew" class="new-tag">New to you</span>
+                </span>
+                <span class="t12 lh green">{{ best.tagline }}</span>
               </span>
-              <span class="t12 lh green">{{ best.tagline }}</span>
-            </span>
-            <Icon name="arrow-right" :size="24" color="#286344" />
-          </RouterLink>
-        </div>
+              <Icon name="arrow-right" :size="24" color="#286344" />
+            </RouterLink>
+          </div>
+        </Transition>
 
-        <!-- The rest -->
-        <RouterLink v-for="plant in others" :key="plant.slug" :to="`/discover/${plant.slug}`" class="rec">
-          <span class="rec-thumb"><PlantThumb :src="plant.image_url" :alt="plant.common_name" :name="plant.common_name" /></span>
-          <span class="grow">
-            <span class="d" style="font-size: 18px; line-height: 1.15">
-              {{ plant.common_name }} <span v-if="plant.isNew" class="new-tag">New to you</span>
+        <!-- The rest. When the filters or the light meter re-rank them, they glide to their new places. -->
+        <TransitionGroup name="list" tag="div" class="stack" style="gap: 12px">
+          <RouterLink v-for="plant in others" :key="plant.slug" :to="`/discover/${plant.slug}`" class="rec">
+            <span class="rec-thumb"><PlantThumb :src="plant.image_url" :alt="plant.common_name" :name="plant.common_name" /></span>
+            <span class="grow">
+              <span class="d" style="font-size: 18px; line-height: 1.15">
+                {{ plant.common_name }} <span v-if="plant.isNew" class="new-tag">New to you</span>
+              </span>
+              <span class="t12 lh muted">{{ plant.tagline }}</span>
+              <span class="semi t12 green">{{ plant.match }}% match<template v-if="plant.pet_safe"> · Pet-safe</template></span>
             </span>
-            <span class="t12 lh muted">{{ plant.tagline }}</span>
-            <span class="semi t12 green">{{ plant.match }}% match<template v-if="plant.pet_safe"> · Pet-safe</template></span>
-          </span>
-          <Icon name="chevron-right" :size="20" color="#286344" />
-        </RouterLink>
+            <Icon name="chevron-right" :size="20" color="#286344" />
+          </RouterLink>
+        </TransitionGroup>
 
         <!-- Saved plants aren't suggested again; they're one tap away -->
         <RouterLink v-if="savedHere" to="/wishlist" class="wish-link">

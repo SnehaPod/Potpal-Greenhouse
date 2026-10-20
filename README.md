@@ -502,6 +502,7 @@ client/public/
   manifest.webmanifest, icon-*.png   what Android needs to install Potpal
   sw.js, offline.html                service worker: the "You're offline" page
 render.yaml           how Render builds and runs the app (see Deploying)
+.claude/skills/vue-animations/SKILL.md   how to add motion here (Vue <Transition>, tokens, reduced motion)
 
 server/
   index.js              Express app, routes, error handling; serves client/dist when it's built

@@ -22,6 +22,7 @@ const router = useRouter()
 const plant = ref(null)
 const error = ref('')
 const watering = ref(false)
+const justWatered = ref(false) // for the tick's little "pop" (main.css → .celebrate)
 const showMenu = ref(false)
 // 'care' | 'journal'. ?tab=journal opens straight onto the journal (linked from the health check)
 const tab = ref(useRoute().query.tab === 'journal' ? 'journal' : 'care')
@@ -61,6 +62,7 @@ async function water(undo = false) {
   watering.value = true
   try {
     plant.value = undo ? await unwaterPlant(plant.value.id) : await waterPlant(plant.value.id)
+    justWatered.value = !undo
   } catch (e) {
     error.value = e.message
   } finally {
@@ -206,7 +208,7 @@ async function remove() {
             <Icon name="chevron-right" :size="20" color="#286344" />
           </RouterLink>
 
-          <button class="btn-primary" :disabled="watering || doneToday" @click="water()">
+          <button class="btn-primary" :class="{ celebrate: justWatered && doneToday }" :disabled="watering || doneToday" @click="water()">
             <Icon name="tick" :size="20" color="white" />
             <span>{{ doneToday ? 'Watered today. Nice!' : 'I checked the soil & watered' }}</span>
           </button>
