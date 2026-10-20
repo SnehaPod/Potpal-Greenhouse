@@ -3,7 +3,7 @@
 // The Vue app never talks to Plant.id directly: it calls this server, which
 // keeps the Plant.id API key secret and checks who the user is first.
 //
-//   GET  /api/health      → { ok: true }  (handy to check the server is up)
+//   GET  /api/health      → { ok, notifications, reminderJob }  (is the server up, and set up?)
 //   POST /api/identify    → identify a plant from a photo
 //   /api/plants…          → the user's saved plants
 //   /api/plants/:id/health… → health scans for one plant
@@ -36,6 +36,7 @@ import wishlistRoutes from './routes/wishlist.js'
 import pushRoutes from './routes/push.js'
 import cronRoutes from './routes/cron.js'
 import { plantIdEnabled } from './lib/identify.js'
+import { pushConfigured } from './lib/push.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -44,7 +45,14 @@ const PORT = process.env.PORT || 3000
 app.use(cors({ origin: (process.env.CLIENT_ORIGIN || 'http://localhost:5173').split(',') }))
 app.use(express.json())
 
-app.get('/api/health', (_req, res) => res.json({ ok: true }))
+// Only yes / no for each setting, never the values: handy for checking a deploy
+app.get('/api/health', (_req, res) =>
+  res.json({
+    ok: true,
+    notifications: pushConfigured, //                  VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY are set
+    reminderJob: Boolean(process.env.CRON_SECRET?.trim()), // CRON_SECRET is set
+  }),
+)
 
 // The scheduled reminder job: checks its own secret instead of a signed-in user
 app.use('/api/cron', cronRoutes)
