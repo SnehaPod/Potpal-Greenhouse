@@ -136,6 +136,29 @@ keys, no stored prices. Edit the catalogue in Supabase Studio, or add a
 migration. To buy and sell real stock later, swap those search links for a
 shopping API.
 
+**Measure my light.** Not sure how bright a spot is? On Discover, tap **Not
+sure? Measure my light**, stand where the plant will go, point the phone at the
+window and take a photo. Potpal reads the exposure the camera chose (shutter
+time, aperture and ISO, from the photo's details) and estimates the light in
+lux, like a photographer's light meter:
+
+- under 2,500 lux → **Low**;
+- 2,500–10,000 → **Medium**;
+- over 10,000 → **Bright, indirect** (over 30,000, it warns that's direct sun).
+
+It then picks that chip for you. The compass names the window's direction, and
+with a saved weather location it says what that means: south-facing gets the
+most sun in the northern hemisphere, north-facing in the southern, and near the
+equator the direction matters less.
+
+- **Private:** it all happens on the phone, and the photo is never uploaded.
+- **Limits:** it's an estimate. Readings are fairest around midday, so it says
+  when a photo is from early, late or another day. Screenshots and photos sent
+  through chat apps have no exposure details, so it asks for a fresh photo.
+  The room can't be recognised from a photo, so you still choose it.
+- **Code:** the maths and thresholds are in `client/src/lib/light.js` (tested
+  in `light.test.js`), and the card is `client/src/components/LightMeter.vue`.
+
 **How Discover picks.** The order keeps changing with what you do, but the
 "% match" shown is always the real fit. `rankForYou()` in
 `client/src/lib/catalog.js` starts from that fit, then:
@@ -457,7 +480,8 @@ about 744 of the 750 free hours a month, and means no cold starts.
 client/src/
   views/          one file per screen
   components/     Icon, AppBar, BottomNav, CheckBox, ToggleSwitch, FactTiles, PlantCard,
-                  PlantThumb, HealthJournal + ScoreChart, ThisWeek, LocalNames, PhotoCredit
+                  PlantThumb, HealthJournal + ScoreChart, ThisWeek, LocalNames, PhotoCredit,
+                  LightMeter
   lib/
     supabase.js   Supabase client (sign-in only)
     auth.js       current user + signIn / signUp / signOut
@@ -466,6 +490,7 @@ client/src/
     plants.js     helpers like isDueToday(), waterStatus()
     identifyStore.js  passes the Plant.id result from camera → result screen
     catalog.js    Discover matching: score, reasons, care tiles and the "for you" order
+    light.js      "Measure my light": lux from a photo's exposure, window direction
     shopping.js   builds the "where to buy" search links
     discoverStore.js  remembers the Discover filters across screens
     wishlist.js   saved plants, shared by every heart in the app
@@ -528,7 +553,8 @@ All endpoints need `Authorization: Bearer <supabase access token>`.
 | `GET` | `/api/plants/:id` | one plant |
 | `POST` | `/api/plants` | add a plant |
 | `PATCH` | `/api/plants/:id` | change `nickname`, `room`, `reminders_on`, `reminder_time`, `ai_adjust` |
-| `POST` | `/api/plants/:id/water` | mark as watered; the next check is due in `water_min_days`, moved ±2 days for this week's weather when `ai_adjust` is on (explained in `water_note`) |
+| `POST` | `/api/plants/:id/water` | mark as watered; the next check is due in `water_min_days`, moved ±2 days for this week's weather when `ai_adjust` is on (explained in `water_note`). Saves how it was in `undo_water` |
+| `POST` | `/api/plants/:id/unwater` | undo the last watering (within a day), putting the dates and note back; 409 if there's nothing to undo |
 | `DELETE` | `/api/plants/:id` | remove a plant |
 | `POST` | `/api/plants/:id/health` | `multipart/form-data` with `photo` → runs a Plant.id health assessment, saves the photo and the scan, returns the scan |
 | `GET` | `/api/plants/:id/health` | every scan for the plant, oldest first (the health journal) |

@@ -139,8 +139,19 @@ img,svg{display:block}
 .shutter-row{display:flex;align-items:center;justify-content:space-between;width:100%}
 .cam-action{width:56px;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px}
 .cam-action:disabled,.shutter:disabled{opacity:.45}
-/* Health scan mode: "which plant are we checking?" */
-.plant-picker{align-self:center;max-width:100%;height:36px;padding:0 14px;border:0;border-radius:var(--r-pill);background:var(--butter);color:var(--ink);font:inherit;font-weight:600;font-size:14px}
+/* Health scan mode: "which plant are we checking?" One chip per plant, with its
+   photo; the chosen one turns butter. Many plants scroll sideways. */
+.plant-choices{display:flex;justify-content:safe center;gap:8px;overflow-x:auto;margin:0 -32px;padding:2px 32px 4px;scrollbar-width:none}
+.plant-choices::-webkit-scrollbar{display:none}
+.plant-choice{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 5px;border-radius:var(--r-pill);background:rgba(255,255,255,.08);border:1px solid rgba(255,240,190,.4);color:#fff;font-weight:600;font-size:14px;transition:background .15s}
+.plant-choice[aria-checked="true"]{background:var(--butter);border-color:var(--butter);color:var(--ink)}
+.plant-choice__photo{width:30px;height:30px;border-radius:50%;overflow:hidden;background:var(--mint);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.plant-choice__photo img{width:100%;height:100%;object-fit:cover}
+
+/* Discover: "Measure my light" (components/LightMeter.vue) */
+.light-meter{display:flex;flex-direction:column;gap:10px;margin-top:4px;padding:12px;border-radius:16px;background:var(--mint)}
+.light-meter__start{display:flex;align-items:center;gap:12px;width:100%}
+.light-meter__steps{padding-left:18px;display:flex;flex-direction:column;gap:2px}
 .shutter{border-radius:50%;transition:transform .12s}
 .shutter:active{transform:scale(.94)}
 

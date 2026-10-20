@@ -11,7 +11,7 @@ import PlantCard from '../components/PlantCard.vue'
 import ThisWeek from '../components/ThisWeek.vue'
 import BottomNav from '../components/BottomNav.vue'
 import { auth, signOut } from '../lib/auth.js'
-import { listPlants, waterPlant } from '../lib/api.js'
+import { listPlants, waterPlant, unwaterPlant } from '../lib/api.js'
 import { isDueToday, wateredToday, todayLabel } from '../lib/plants.js'
 import { push, refreshPush, enablePush } from '../lib/push.js'
 
@@ -65,11 +65,11 @@ async function answerPushAsk(yes) {
   }
 }
 
+/** Tick: watered. Untick: undo it (tapped by mistake). */
 async function markWatered(plant, checked) {
-  // Unticking doesn't "un-water" a plant, so only act on a tick
-  if (!checked || wateredToday(plant)) return
+  if (checked === wateredToday(plant)) return // already that way
   try {
-    const updated = await waterPlant(plant.id)
+    const updated = checked ? await waterPlant(plant.id) : await unwaterPlant(plant.id)
     plants.value = plants.value.map((p) => (p.id === updated.id ? updated : p))
   } catch (e) {
     error.value = e.message

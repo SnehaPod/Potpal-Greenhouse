@@ -12,7 +12,7 @@
   the file picker instead.
 -->
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Icon from '../components/Icon.vue'
 import { identifyPhoto, listPlants, scanHealth } from '../lib/api.js'
@@ -43,8 +43,13 @@ const chosenPlant = computed(() => plants.value.find((p) => p.id === plantId.val
 onMounted(async () => {
   try {
     plants.value = await listPlants()
-    // No plant in the link (or it's not one of yours)? Start with the first one.
-    if (!chosenPlant.value) plantId.value = plants.value[0]?.id ?? ''
+    // Only choose for the user when it's certain: the link named the plant, or
+    // there's just one. Otherwise they tap one, so a scan can't land on the
+    // wrong plant by accident.
+    if (!chosenPlant.value) plantId.value = plants.value.length === 1 ? plants.value[0].id : ''
+    // Chosen from a link, with lots of plants? Scroll its chip into view.
+    await nextTick()
+    document.querySelector('.plant-choice[aria-checked="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest' })
   } catch (e) {
     error.value = e.message
   }
@@ -183,10 +188,26 @@ async function send(photo) {
           </p>
         </template>
         <template v-else-if="mode === 'health'">
-          <h2 class="d" style="font-size: 22px">Scanning which plant?</h2>
-          <select v-model="plantId" class="plant-picker" aria-label="Plant to scan">
-            <option v-for="p in plants" :key="p.id" :value="p.id">{{ p.nickname }} · {{ p.common_name || p.species }}</option>
-          </select>
+          <h2 class="d" style="font-size: 22px">{{ chosenPlant ? `Scanning ${chosenPlant.nickname}` : 'Which plant is this?' }}</h2>
+          <!-- One chip per plant, with its photo, so it's clear which plant the scan is for -->
+          <div class="plant-choices" role="radiogroup" aria-label="Plant to scan">
+            <button
+              v-for="p in plants"
+              :key="p.id"
+              type="button"
+              class="plant-choice"
+              role="radio"
+              :aria-checked="p.id === plantId"
+              @click="plantId = p.id"
+            >
+              <span class="plant-choice__photo">
+                <img v-if="p.photo_url" :src="p.photo_url" alt="" />
+                <Icon v-else name="sprout" :size="16" color="#286344" />
+              </span>
+              {{ p.nickname }}
+              <Icon v-if="p.id === plantId" name="check" :size="16" color="#286344" />
+            </button>
+          </div>
         </template>
         <template v-else>
           <h2 class="d" style="font-size: 24px">A leaf is all we need.</h2>

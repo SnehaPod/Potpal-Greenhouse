@@ -14,6 +14,7 @@ import Icon from '../components/Icon.vue'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
 import BottomNav from '../components/BottomNav.vue'
 import PlantThumb from '../components/PlantThumb.vue'
+import LightMeter from '../components/LightMeter.vue'
 import { listCatalog, getCatalogViews } from '../lib/api.js'
 import { LIGHT_LEVELS, rankForYou } from '../lib/catalog.js'
 import { discoverFilters } from '../lib/discoverStore.js'
@@ -109,6 +110,8 @@ async function heart(slug) {
               <Icon name="check" :size="16" color="#286344" />{{ level }}
             </button>
           </div>
+          <!-- Or measure it with a photo (sets the chip above) -->
+          <LightMeter />
         </div>
 
         <div class="divider"></div>

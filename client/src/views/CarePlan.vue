@@ -11,7 +11,7 @@ import AppBar from '../components/AppBar.vue'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
 import HealthJournal from '../components/HealthJournal.vue'
 import LocalNames from '../components/LocalNames.vue'
-import { getPlant, updatePlant, waterPlant, deletePlant, getForecast } from '../lib/api.js'
+import { getPlant, updatePlant, waterPlant, unwaterPlant, deletePlant, getForecast } from '../lib/api.js'
 import { ALERT_ICONS } from '../lib/weather.js'
 import { waterStatus, waterEvery, wateredToday } from '../lib/plants.js'
 import { push, refreshPush, enablePush, sendTestPush } from '../lib/push.js'
@@ -56,10 +56,11 @@ const wateringAdvice = computed(
   () => plant.value.watering_tips?.match(/[^.!?]+[.!?]/)?.[0] ?? 'Only water when the top 2–3 cm of soil is dry.',
 )
 
-async function water() {
+/** "I checked the soil & watered", or undo it if it was a mistake */
+async function water(undo = false) {
   watering.value = true
   try {
-    plant.value = await waterPlant(plant.value.id)
+    plant.value = undo ? await unwaterPlant(plant.value.id) : await waterPlant(plant.value.id)
   } catch (e) {
     error.value = e.message
   } finally {
@@ -205,9 +206,13 @@ async function remove() {
             <Icon name="chevron-right" :size="20" color="#286344" />
           </RouterLink>
 
-          <button class="btn-primary" :disabled="watering || doneToday" @click="water">
+          <button class="btn-primary" :disabled="watering || doneToday" @click="water()">
             <Icon name="tick" :size="20" color="white" />
             <span>{{ doneToday ? 'Watered today. Nice!' : 'I checked the soil & watered' }}</span>
+          </button>
+          <!-- Tapped by mistake? Put it back (the server remembers how it was) -->
+          <button v-if="doneToday && plant.undo_water" class="link" :disabled="watering" @click="water(true)">
+            Undo: I haven't watered {{ plant.nickname }} yet
           </button>
         </section>
 

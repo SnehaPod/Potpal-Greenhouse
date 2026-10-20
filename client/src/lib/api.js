@@ -41,6 +41,8 @@ export const getPlant = (id) => request(`/plants/${id}`)
 export const addPlant = (plant) => request('/plants', { method: 'POST', body: plant })
 export const updatePlant = (id, changes) => request(`/plants/${id}`, { method: 'PATCH', body: changes })
 export const waterPlant = (id) => request(`/plants/${id}/water`, { method: 'POST' })
+/** Undo the last "watered" (tapped by mistake) */
+export const unwaterPlant = (id) => request(`/plants/${id}/unwater`, { method: 'POST' })
 export const deletePlant = (id) => request(`/plants/${id}`, { method: 'DELETE' })
 
 // ─── Discover catalogue ─────────────────────────────────────────────────────────

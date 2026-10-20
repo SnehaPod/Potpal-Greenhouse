@@ -5,6 +5,7 @@
 //   POST   /api/plants             add a plant (after identifying it)
 //   PATCH  /api/plants/:id         change nickname, room or reminder settings
 //   POST   /api/plants/:id/water   "I checked the soil & watered"
+//   POST   /api/plants/:id/unwater undo the last "watered" (tapped by mistake)
 //   DELETE /api/plants/:id         remove a plant
 //
 // Every query runs through req.supabase, which acts as the signed-in user, so
@@ -103,7 +104,7 @@ router.post('/:id/water', async (req, res) => {
   // Look up the plant first so we know its watering rhythm
   const { data: plant, error: findError } = await req.supabase
     .from('plants')
-    .select('water_min_days, water_max_days, ai_adjust')
+    .select('water_min_days, water_max_days, ai_adjust, last_watered_at, next_water_due_at, water_note')
     .eq('id', req.params.id)
     .maybeSingle()
   if (findError) throw findError
@@ -120,7 +121,39 @@ router.post('/:id/water', async (req, res) => {
       last_watered_at: now.toISOString(),
       next_water_due_at: new Date(now.getTime() + intervalDays * DAY_MS).toISOString(),
       water_note: note, // null clears an old explanation
+      // How it was before, so "undo" can put it back
+      undo_water: {
+        last_watered_at: plant.last_watered_at,
+        next_water_due_at: plant.next_water_due_at,
+        water_note: plant.water_note,
+      },
     })
+    .eq('id', req.params.id)
+    .select()
+    .single()
+  if (error) throw error
+  res.json(data)
+})
+
+router.post('/:id/unwater', async (req, res) => {
+  const { data: plant, error: findError } = await req.supabase
+    .from('plants')
+    .select('last_watered_at, undo_water')
+    .eq('id', req.params.id)
+    .maybeSingle()
+  if (findError) throw findError
+  if (!plant) return sendPlant(res, null)
+
+  // Only the most recent watering, and only within a day of it
+  const recent = plant.last_watered_at && Date.now() - new Date(plant.last_watered_at) < DAY_MS
+  if (!plant.undo_water || !recent) {
+    return res.status(409).json({ error: "There's no recent watering to undo." })
+  }
+
+  const { last_watered_at, next_water_due_at, water_note } = plant.undo_water
+  const { data, error } = await req.supabase
+    .from('plants')
+    .update({ last_watered_at, next_water_due_at, water_note, undo_water: null })
     .eq('id', req.params.id)
     .select()
     .single()
