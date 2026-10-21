@@ -15,6 +15,7 @@ import { getPlant, updatePlant, waterPlant, unwaterPlant, deletePlant, getForeca
 import { ALERT_ICONS } from '../lib/weather.js'
 import { waterStatus, waterEvery, wateredToday } from '../lib/plants.js'
 import { push, refreshPush, enablePush, sendTestPush } from '../lib/push.js'
+import PhotoCredit from '../components/PhotoCredit.vue'
 
 const props = defineProps({ id: { type: String, required: true } })
 const router = useRouter()
@@ -142,6 +143,8 @@ async function remove() {
           <img :src="plant.photo_url || '/images/miso-careplan.webp'" width="364" height="204" :alt="`${plant.nickname} the ${plant.common_name || plant.species}`" />
           <span class="overlay badge" style="left: 14px; bottom: 14px"><Icon name="home" :size="16" />{{ plant.room }}</span>
         </div>
+        <!-- Added by name with a free species photo: credit its photographer -->
+        <PhotoCredit :plant="plant" />
 
         <div class="row">
           <div class="grow stack" style="gap: 4px">

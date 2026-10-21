@@ -2,6 +2,8 @@
 //
 //   GET /api/species/search?q=snake plant
 //       → { results: [...], nudge, group }   (see lib/plantSearch.js)
+//       Results outside the catalogue get a free photo with its credit, and are
+//       ranked by how well-known they are (lib/speciesPhotos.js)
 //   GET /api/species/details?name=Dracaena trifasciata&common=Snake plant
 //       → one "suggestion", the same shape the photo identification gives,
 //         with care from Potpal's catalogue (or general houseplant tips)
@@ -9,7 +11,8 @@
 // Reads only the shared, read-only plant lists. Nothing about the user is stored.
 
 import { Router } from 'express'
-import { searchPlants } from '../lib/plantSearch.js'
+import { searchPlants, rankByPopularity } from '../lib/plantSearch.js'
+import { speciesInfo } from '../lib/speciesPhotos.js'
 import { curatedRows } from '../lib/names.js'
 import { addCareFromDatabase } from '../lib/careFallback.js'
 
@@ -19,16 +22,42 @@ const router = Router()
 let catalog = { at: 0, rows: [] }
 async function catalogRows(supabase) {
   if (Date.now() - catalog.at < 10 * 60 * 1000) return catalog.rows
-  const { data, error } = await supabase.from('plant_catalog').select('scientific_name, common_name, image_url')
+  const { data, error } = await supabase
+    .from('plant_catalog')
+    .select('scientific_name, common_name, image_url, image_author, image_licence, image_licence_url, image_source_url')
   if (error) throw error
   catalog = { at: Date.now(), rows: data }
   return data
 }
 
+/** A catalogue plant's photo credit (only its Wikimedia Commons photos need one) */
+function catalogCredit(rows, result) {
+  const row = rows.find((r) => r.scientific_name === result.name)
+  if (!row?.image_source_url) return null
+  return {
+    url: row.image_url,
+    author: row.image_author,
+    licence: row.image_licence,
+    licenceUrl: row.image_licence_url,
+    sourceUrl: row.image_source_url,
+    via: 'Wikimedia Commons',
+  }
+}
+
 router.get('/search', async (req, res) => {
   const q = String(req.query.q ?? '').trim().slice(0, 80)
   const [rows, nameRows] = await Promise.all([catalogRows(req.supabase), curatedRows(req.supabase)])
-  res.json(await searchPlants(q, { catalog: rows, nameRows }))
+  const found = await searchPlants(q, { catalog: rows, nameRows })
+
+  // A photo (and a "how well-known" count) for each plant we don't have our own photo of
+  const results = await Promise.all(
+    found.results.map(async (result) => {
+      if (result.inCatalog) return { ...result, photo: catalogCredit(rows, result) }
+      const { observations, photo } = await speciesInfo(result.name)
+      return { ...result, observations, imageUrl: result.imageUrl ?? photo?.url ?? null, photo }
+    }),
+  )
+  res.json({ ...found, results: rankByPopularity(results) })
 })
 
 router.get('/details', async (req, res) => {

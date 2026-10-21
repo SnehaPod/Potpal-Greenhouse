@@ -12,6 +12,7 @@ import AppBar from '../components/AppBar.vue'
 import FactTiles from '../components/FactTiles.vue'
 import LocalNames from '../components/LocalNames.vue'
 import PlantThumb from '../components/PlantThumb.vue'
+import PhotoCredit from '../components/PhotoCredit.vue'
 import { identifyStore } from '../lib/identifyStore.js'
 import { addPlant, listPlants } from '../lib/api.js'
 import { isPetSafe, ROOMS } from '../lib/plants.js'
@@ -82,6 +83,8 @@ async function save() {
       common_name: m.commonName,
       description: m.description,
       photo_url: byName.value ? identifyStore.imageUrl : identifyStore.photoUrl,
+      // The species photo's credit travels with the plant (shown on its care plan)
+      ...(byName.value ? identifyStore.imageCredit : null),
       confidence: m.probability,
       light: m.light,
       light_tips: m.lightTips,
@@ -116,6 +119,7 @@ async function save() {
           </div>
           <span class="overlay badge" style="left: 14px; top: 14px"><Icon name="pencil" :size="16" />Added by name</span>
         </div>
+        <PhotoCredit v-if="byName && identifyStore.imageCredit" :plant="identifyStore.imageCredit" />
         <div v-else class="photo photo--wide">
           <img :src="identifyStore.photoUrl" width="364" height="236" alt="Your plant photo" />
           <span class="overlay badge" style="left: 14px; top: 14px"><Icon name="sparkle" :size="16" />{{ percent }}% match</span>

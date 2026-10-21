@@ -45,6 +45,8 @@ async function adjustedInterval(req, plant) {
 const CREATE_FIELDS = [
   'nickname', 'room', 'species', 'common_name', 'description', 'photo_url', 'confidence',
   'light', 'light_tips', 'water_min_days', 'water_max_days', 'watering_tips', 'care_level', 'toxicity',
+  // Credit for a species photo (added by name); see migration 012
+  'image_author', 'image_licence', 'image_licence_url', 'image_source_url', 'image_via',
 ]
 // Fields the app may change later
 const UPDATE_FIELDS = ['nickname', 'room', 'reminders_on', 'reminder_time', 'ai_adjust']

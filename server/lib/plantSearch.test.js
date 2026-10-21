@@ -3,7 +3,7 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { editDistance, knownPlants, localMatches, fromGbifMatch, fromGbifVernacular, searchPlants } from './plantSearch.js'
+import { editDistance, knownPlants, localMatches, fromGbifMatch, fromGbifVernacular, searchPlants, rankByPopularity } from './plantSearch.js'
 
 const catalog = [
   { scientific_name: 'Monstera deliciosa', common_name: 'Monstera deliciosa', image_url: '/images/monstera.webp' },
@@ -50,7 +50,9 @@ test('GBIF match: typos corrected, old names followed, groups recognised', () =>
   const synonym = fromGbifMatch({ kingdom: 'Plantae', matchType: 'EXACT', rank: 'SPECIES', species: 'Dracaena trifasciata', canonicalName: 'Sansevieria trifasciata', status: 'SYNONYM', confidence: 100 })
   assert.deepEqual([synonym.name, synonym.wasName], ['Dracaena trifasciata', 'Sansevieria trifasciata'])
 
-  assert.deepEqual(fromGbifMatch({ kingdom: 'Plantae', matchType: 'HIGHERRANK', rank: 'GENUS', canonicalName: 'Ficus' }), { group: 'Ficus' })
+  assert.deepEqual(fromGbifMatch({ kingdom: 'Plantae', matchType: 'HIGHERRANK', rank: 'GENUS', canonicalName: 'Ficus' }, 'ficus'), { group: 'Ficus' })
+  // A genus GBIF guessed from a different word isn't what the user meant
+  assert.equal(fromGbifMatch({ kingdom: 'Plantae', matchType: 'FUZZY', rank: 'GENUS', canonicalName: 'Bambos' }, 'bamboo'), null)
   // "Plantae" itself, or an animal: no answer
   assert.equal(fromGbifMatch({ kingdom: 'Plantae', matchType: 'HIGHERRANK', rank: 'KINGDOM' }), null)
   assert.equal(fromGbifMatch({ kingdom: 'Animalia', matchType: 'EXACT', rank: 'SPECIES', species: 'Felis catus' }), null)
@@ -110,4 +112,27 @@ test('the nudge: nothing found, a group, or a weak spelling guess', async () => 
 test('GBIF down: our own lists still answer', async () => {
   const { results } = await searchPlants('peace lilly', { catalog, nameRows, fetchGbif: gbifDown })
   assert.equal(results[0].name, 'Spathiphyllum wallisii')
+})
+
+test('well-known plants first; obscure ones dropped when there are better', () => {
+  const r = (name, observations, extra = {}) => ({ name, observations, confidence: 90, inCatalog: false, ...extra })
+  const ranked = rankByPopularity([
+    r('Agave cacozela', 1),
+    r('Bambusa tulda', 34),
+    r('Dracaena sanderiana', 7751),
+    r('Muhlenbergia dumosa', 209),
+    r('Epipremnum aureum', 0, { inCatalog: true }),
+    r('Bambusa vulgaris', 5000, { confidence: 80 }),
+    r('Dracaena sanderiana var. lucky', 50, { confidence: 75, curated: true }),
+  ])
+  assert.deepEqual(ranked.map((x) => x.name), [
+    'Epipremnum aureum', // our catalogue
+    'Dracaena sanderiana var. lucky', // Potpal's names list, even as a looser match
+    'Dracaena sanderiana',
+    'Muhlenbergia dumosa',
+    'Bambusa tulda',
+    'Bambusa vulgaris',
+  ])
+  // Only obscure ones? Keep them rather than show nothing
+  assert.equal(rankByPopularity([r('Agave cacozela', 1)]).length, 1)
 })

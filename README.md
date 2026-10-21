@@ -157,8 +157,18 @@ or **Search for it** on an empty Home.
 - **Picking a result** opens the usual screen to name the plant and add it.
   Plants outside the catalogue get general houseplant tips, and the screen
   says so.
-- **Privacy:** only the typed text is sent to GBIF. If GBIF is down, Potpal's
-  own lists still answer. Tests: `plantSearch.test.js`.
+- **Photos for every result** (`server/lib/speciesPhotos.js`): the catalogue's
+  own photo, otherwise one from [iNaturalist](https://www.inaturalist.org) or
+  Wikipedia's lead photo on Wikimedia Commons.
+  - Only freely reusable photos are used (CC0, CC BY, CC BY-SA), never "all
+    rights reserved" or "non-commercial".
+  - The credit shows on the add screen and stays with the plant (migration
+    `012`, shown on its care plan).
+  - iNaturalist's record counts also rank well-known plants above obscure
+    ones, and Potpal's own houseplant names come first.
+- **Privacy:** only the typed text goes to GBIF, and only the species name to
+  iNaturalist and Wikipedia. If they're down, Potpal's own lists still answer.
+  Tests: `plantSearch.test.js`, `speciesPhotos.test.js`.
 
 **Measure my light.** Not sure how bright a spot is? On Discover, tap **Not
 sure? Measure my light**, stand where the plant will go, point the phone at the
@@ -545,6 +555,7 @@ server/
   lib/identify.js       cache → Plant.id → Pl@ntNet, plus the PLANT_ID_ENABLED test switch
   lib/plantnet.js       Pl@ntNet requests (the backup identifier)
   lib/plantSearch.js    add a plant by name: our lists + GBIF, spelling fixes, photo nudge
+  lib/speciesPhotos.js  free species photos with credits (iNaturalist, Wikimedia Commons)
   lib/careFallback.js   care facts for Pl@ntNet answers (catalogue, or general tips)
   lib/identify.test.js + plantnet.test.js   tests for the fallback (fakes, no network)
   routes/names.js       GET /api/names

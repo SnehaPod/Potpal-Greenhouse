@@ -27,6 +27,8 @@ import { normalize } from './names.js'
 const GBIF = 'https://api.gbif.org/v1'
 const BACKBONE = 'd7dddbf4-2cf0-4f39-9b2a-bb099caae36c' // GBIF's main species list
 const MAX_RESULTS = 6
+const CANDIDATES = 10 // gathered before ranking by how well-known each plant is (routes/species.js)
+const RARELY_SEEN = 10 // iNaturalist records below this: an obscure plant, dropped when there are better ones
 export const WEAK_MATCH = 85 // GBIF confidence below this: suggest a photo too
 
 // ─── Spelling ─────────────────────────────────────────────────────────────────
@@ -118,6 +120,7 @@ export function localMatches(query, plants) {
         commonName: plant.commonName,
         imageUrl: plant.imageUrl,
         inCatalog: plant.inCatalog,
+        curated: true, // in Potpal's own lists: a houseplant we know about
         kind,
         // Matched an alias ("money plant", "स्नेक प्लांट")? Say so, so the result makes sense.
         alsoKnownAs: viaScientific || viaCommon || kind === 'partial' ? null : best.key,
@@ -139,9 +142,10 @@ const speciesOnly = (name) => (name ?? '').split(' ').slice(0, 2).join(' ')
  * GBIF's "match" answer → one result, or { group } for a genus, or null.
  * Synonyms are followed to the current name, and the old name is kept to show.
  */
-export function fromGbifMatch(json) {
+export function fromGbifMatch(json, query = '') {
   if (!json || json.kingdom !== 'Plantae' || json.matchType === 'NONE') return null
-  if (json.rank === 'GENUS') return { group: json.canonicalName }
+  // A group only when it's the name typed ("Ficus"), not a guess ("bamboo" → the genus "Bambos")
+  if (json.rank === 'GENUS') return normalize(json.canonicalName) === normalize(query) ? { group: json.canonicalName } : null
   if (!json.species || json.matchType === 'HIGHERRANK') return null
   const synonym = json.status === 'SYNONYM'
   return {
@@ -205,7 +209,26 @@ export function mergeResults(...lists) {
     // Don't say "also known as" the same old name we already show as "now called"
     .map((r) => (r.alsoKnownAs && normalize(r.alsoKnownAs) === normalize(r.wasName) ? { ...r, alsoKnownAs: null } : r))
     .sort((a, b) => Number(b.inCatalog) - Number(a.inCatalog) || b.confidence - a.confidence)
-    .slice(0, MAX_RESULTS)
+    .slice(0, CANDIDATES)
+}
+
+/**
+ * Final order, once we know how often each plant is recorded on iNaturalist
+ * (result.observations): our catalogue first, then good matches before loose
+ * ones, and well-known plants before obscure ones. Obscure plants (a "bamboo"
+ * that's really a rare agave) are dropped when there are enough better ones.
+ */
+export function rankByPopularity(results) {
+  const strong = (r) => (r.confidence >= 90 ? 1 : 0)
+  const ranked = [...results].sort(
+    (a, b) =>
+      Number(b.inCatalog) - Number(a.inCatalog) ||
+      Number(Boolean(b.curated)) - Number(Boolean(a.curated)) || // Potpal's names list: known houseplants
+      strong(b) - strong(a) ||
+      (b.observations ?? 0) - (a.observations ?? 0),
+  )
+  const known = ranked.filter((r) => r.inCatalog || (r.observations ?? 0) >= RARELY_SEEN)
+  return (known.length >= 3 ? known : ranked).slice(0, MAX_RESULTS)
 }
 
 /**
@@ -256,7 +279,7 @@ export async function searchPlants(query, { catalog, nameRows, fetchGbif = gbif 
     ),
   ])
 
-  const matched = fromGbifMatch(matchJson)
+  const matched = fromGbifMatch(matchJson, q)
   const group = matched?.group ?? null
   const fromGbif = [...(matched && !matched.group ? [matched] : []), ...fromGbifVernacular(vernacularJson, q)]
 

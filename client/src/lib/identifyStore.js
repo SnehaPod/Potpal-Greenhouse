@@ -9,12 +9,14 @@ export const identifyStore = reactive({
   suggestions: [], // ranked best match first
   index: 0, // which suggestion we're showing ("See other matches" bumps this)
   source: 'plantid', // who identified it: 'plantid', 'plantnet' (the backup), or 'search' (typed its name)
-  imageUrl: null, // added by name: the catalogue's photo of the species, if it has one
+  imageUrl: null, // added by name: a photo of the species (catalogue, iNaturalist or Commons), if there is one
+  imageCredit: null, // and its credit: { image_author, image_licence, image_licence_url, image_source_url, image_via }
 })
 
-export function setIdentifyResult({ photoUrl, suggestions, source, imageUrl = null }) {
+export function setIdentifyResult({ photoUrl, suggestions, source, imageUrl = null, imageCredit = null }) {
   identifyStore.photoUrl = photoUrl
   identifyStore.imageUrl = imageUrl
+  identifyStore.imageCredit = imageCredit
   identifyStore.suggestions = suggestions
   identifyStore.index = 0
   identifyStore.source = source ?? 'plantid'

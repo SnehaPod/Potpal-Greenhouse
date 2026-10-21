@@ -73,7 +73,8 @@ function why(result) {
   if (result.wasName) return `Once called ${result.wasName}`
   if (result.alsoKnownAs) return `Also called ${result.alsoKnownAs}`
   if (result.inCatalog) return 'In our care guide'
-  if (result.kind === 'common') return 'Common name match'
+  if (['common', 'partial', 'group'].includes(result.kind)) return 'Name match'
+  if (result.kind === 'fuzzy') return 'Closest spelling'
   return 'Scientific name'
 }
 
@@ -86,9 +87,17 @@ async function choose(result) {
   error.value = ''
   try {
     const suggestion = await speciesDetails(result.name, result.commonName)
+    const credit = result.photo // who took the species photo, for the credit line
     setIdentifyResult({
-      photoUrl: null, // no photo of their own: the result screen shows the catalogue's, or a placeholder
+      photoUrl: null, // no photo of their own: the result screen shows the species photo, or a placeholder
       imageUrl: result.imageUrl,
+      imageCredit: credit && {
+        image_author: credit.author,
+        image_licence: credit.licence,
+        image_licence_url: credit.licenceUrl,
+        image_source_url: credit.sourceUrl,
+        image_via: credit.via,
+      },
       suggestions: [{ ...suggestion, commonName: result.commonName ?? suggestion.commonName }],
       source: 'search',
     })
@@ -183,7 +192,9 @@ async function choose(result) {
         </RouterLink>
       </Transition>
 
-      <p class="footnote">Names from Potpal's plant guide and GBIF, the global species list.</p>
+      <p class="footnote">
+        Names from Potpal's plant guide and GBIF. Photos from iNaturalist and Wikimedia Commons, credited when you pick one.
+      </p>
     </main>
   </section>
 </template>

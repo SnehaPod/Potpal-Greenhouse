@@ -1,8 +1,9 @@
 <!--
   "Photo: Mokkie, CC BY-SA 3.0, via Wikimedia Commons"
-  Free Commons photos ask for this credit wherever they're shown (CC BY and
-  CC BY-SA licences). Renders nothing for Potpal's own design photos.
-    <PhotoCredit :plant="catalogPlant" />
+  Free photos (Wikimedia Commons, iNaturalist) ask for this credit wherever
+  they're shown (CC BY and CC BY-SA licences). Renders nothing for Potpal's own
+  design photos, or photos people took themselves.
+    <PhotoCredit :plant="catalogPlant" />   (or a user's plant added by name)
 -->
 <script setup>
 defineProps({ plant: { type: Object, required: true } })
@@ -14,6 +15,6 @@ defineProps({ plant: { type: Object, required: true } })
     <a :href="plant.image_source_url" target="_blank" rel="noopener noreferrer">{{ plant.image_author || 'unknown author' }}</a>,
     <a v-if="plant.image_licence_url" :href="plant.image_licence_url" target="_blank" rel="noopener noreferrer">{{ plant.image_licence }}</a>
     <span v-else>{{ plant.image_licence }}</span>,
-    via Wikimedia Commons
+    via {{ plant.image_via || 'Wikimedia Commons' }}
   </p>
 </template>
