@@ -176,6 +176,7 @@ async function markWatered(plant, checked) {
           <RouterLink to="/identify" class="btn-primary" style="margin-top: 8px">
             <Icon name="scan" :size="20" color="white" />Identify my first plant
           </RouterLink>
+          <RouterLink to="/identify/search" class="link" style="font-size: 13px">Know its name? Search for it</RouterLink>
         </div>
 
         <div v-else class="plant-cards">

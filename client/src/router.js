@@ -8,6 +8,7 @@ import SignIn from './views/SignIn.vue'
 import Home from './views/Home.vue'
 import Identify from './views/Identify.vue'
 import Identified from './views/Identified.vue'
+import SearchPlant from './views/SearchPlant.vue'
 import CarePlan from './views/CarePlan.vue'
 import Health from './views/Health.vue'
 import Discover from './views/Discover.vue'
@@ -23,6 +24,7 @@ const routes = [
   { path: '/reset-password', component: ResetPassword, meta: { public: true, title: 'New password' } },
   { path: '/', component: Home, meta: { title: 'My plants' } },
   { path: '/identify', component: Identify, meta: { title: 'Meet your plant' } },
+  { path: '/identify/search', component: SearchPlant, meta: { title: 'Add by name' } },
   { path: '/identified', component: Identified, meta: { title: 'Plant identified' } },
   { path: '/plants/:id', component: CarePlan, props: true, meta: { title: 'Care plan' } },
   { path: '/plants/:id/health', component: Health, props: true, meta: { title: 'Weekly health check' } },

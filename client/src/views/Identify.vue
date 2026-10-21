@@ -211,7 +211,10 @@ async function send(photo) {
         </template>
         <template v-else>
           <h2 class="d" style="font-size: 24px">A leaf is all we need.</h2>
-          <p class="t13 lh" style="color: var(--tip)">Keep one leaf in the frame, in natural light.</p>
+          <p class="t13 lh" style="color: var(--tip)">
+            Keep one leaf in the frame, in natural light.
+            <RouterLink to="/identify/search" class="semi" style="color: var(--butter)">Know its name? Type it</RouterLink>
+          </p>
         </template>
       </div>
 

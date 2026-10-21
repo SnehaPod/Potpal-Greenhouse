@@ -54,6 +54,16 @@ export const getCatalogViews = () => request('/catalog/views')
 /** "I opened this plant" (helps Discover keep suggestions fresh) */
 export const recordCatalogView = (slug) => request(`/catalog/${slug}/view`, { method: 'POST' })
 
+// ─── Add a plant by name ───────────────────────────────────────────────────────
+
+/** "snake plant" → { results, nudge, group } (spelling fixed; see server/lib/plantSearch.js) */
+export const searchSpecies = (q) => request(`/species/search?q=${encodeURIComponent(q)}`)
+/** One species' care details, shaped like a photo identification's suggestion */
+export function speciesDetails(name, commonName) {
+  const params = new URLSearchParams({ name, common: commonName ?? '' })
+  return request(`/species/details?${params}`)
+}
+
 // ─── Weather-aware care ─────────────────────────────────────────────────────────
 
 /** My saved place ({ place_name, latitude, longitude }), or null */

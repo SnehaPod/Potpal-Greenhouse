@@ -11,6 +11,7 @@ import Icon from '../components/Icon.vue'
 import AppBar from '../components/AppBar.vue'
 import FactTiles from '../components/FactTiles.vue'
 import LocalNames from '../components/LocalNames.vue'
+import PlantThumb from '../components/PlantThumb.vue'
 import { identifyStore } from '../lib/identifyStore.js'
 import { addPlant, listPlants } from '../lib/api.js'
 import { isPetSafe, ROOMS } from '../lib/plants.js'
@@ -46,6 +47,8 @@ const total = computed(() => identifyStore.suggestions.length)
 const percent = computed(() => Math.round((match.value?.probability ?? 0) * 100))
 const displayName = computed(() => match.value?.commonName || match.value?.name)
 const petSafe = computed(() => isPetSafe(match.value?.toxicity))
+// Added by typing its name (no photo of their own): shows the catalogue's photo or a placeholder
+const byName = computed(() => identifyStore.source === 'search')
 
 const facts = computed(() => [
   { icon: 'sun', value: match.value.light, label: 'Light' },
@@ -78,7 +81,7 @@ async function save() {
       species: m.name,
       common_name: m.commonName,
       description: m.description,
-      photo_url: identifyStore.photoUrl,
+      photo_url: byName.value ? identifyStore.imageUrl : identifyStore.photoUrl,
       confidence: m.probability,
       light: m.light,
       light_tips: m.lightTips,
@@ -100,13 +103,20 @@ async function save() {
 
 <template>
   <section v-if="match" class="screen">
-    <AppBar title="Plant identified" fallback="/identify">
+    <AppBar :title="byName ? 'Your plant' : 'Plant identified'" :fallback="byName ? '/identify/search' : '/identify'">
       <button class="icon-btn" aria-label="Share" @click="share"><Icon name="share" color="#203C2D" /></button>
     </AppBar>
 
     <main class="screen-body">
       <div class="stack" style="gap: 6px">
-        <div class="photo photo--wide">
+        <!-- Typed its name: the catalogue's photo (or a placeholder), like Discover's plant pages -->
+        <div v-if="byName" class="photo">
+          <div class="thumb thumb--hero">
+            <PlantThumb :src="identifyStore.imageUrl" :alt="displayName" :name="displayName" />
+          </div>
+          <span class="overlay badge" style="left: 14px; top: 14px"><Icon name="pencil" :size="16" />Added by name</span>
+        </div>
+        <div v-else class="photo photo--wide">
           <img :src="identifyStore.photoUrl" width="364" height="236" alt="Your plant photo" />
           <span class="overlay badge" style="left: 14px; top: 14px"><Icon name="sparkle" :size="16" />{{ percent }}% match</span>
         </div>

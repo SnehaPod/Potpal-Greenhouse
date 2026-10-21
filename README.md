@@ -136,6 +136,30 @@ keys, no stored prices. Edit the catalogue in Supabase Studio, or add a
 migration. To buy and sell real stock later, swap those search links for a
 shopping API.
 
+**Add a plant by name.** People who already know their plant (or would
+rather not take a photo) tap **Know its name? Type it** on the camera screen,
+or **Search for it** on an empty Home.
+
+- **What to type:** a common name, a scientific name, or the name in Hindi,
+  Marathi, Tamil or Malayalam.
+- **Where results come from** (`server/lib/plantSearch.js`):
+  - **Potpal's own lists first:** the Discover catalogue and the names list.
+    These come with care details and photos, and allow a couple of wrong
+    letters.
+  - **Then [GBIF](https://www.gbif.org)**, the free, keyless global species
+    list. It corrects misspelt scientific names ("Monstera delicioza"), follows
+    old names to current ones ("Sansevieria trifasciata", now *Dracaena
+    trifasciata*), and finds common names ("snake plant").
+- **The top result** says **Did you mean…?** when it's a spelling correction.
+- **Suggesting a photo instead:** a card appears when nothing is found, when
+  the best guess is a weak correction, when the name covers a whole group
+  ("fern", "Ficus"), or after three searches without a pick.
+- **Picking a result** opens the usual screen to name the plant and add it.
+  Plants outside the catalogue get general houseplant tips, and the screen
+  says so.
+- **Privacy:** only the typed text is sent to GBIF. If GBIF is down, Potpal's
+  own lists still answer. Tests: `plantSearch.test.js`.
+
 **Measure my light.** Not sure how bright a spot is? On Discover, tap **Not
 sure? Measure my light**, stand where the plant will go, point the phone at the
 window and take a photo. Potpal reads the exposure the camera chose (shutter
@@ -520,11 +544,13 @@ server/
   lib/names.test.js     tests for name matching
   lib/identify.js       cache → Plant.id → Pl@ntNet, plus the PLANT_ID_ENABLED test switch
   lib/plantnet.js       Pl@ntNet requests (the backup identifier)
+  lib/plantSearch.js    add a plant by name: our lists + GBIF, spelling fixes, photo nudge
   lib/careFallback.js   care facts for Pl@ntNet answers (catalogue, or general tips)
   lib/identify.test.js + plantnet.test.js   tests for the fallback (fakes, no network)
   routes/names.js       GET /api/names
   routes/wishlist.js    /api/wishlist: list, save, remove
   routes/push.js        /api/push: key, save / forget this phone, test
+  routes/species.js     /api/species: add a plant by name (search + care details)
   routes/cron.js        POST /api/cron/reminders (the 15-minute job; secret only)
   routes/identify.js    POST /api/identify
   routes/plants.js      /api/plants CRUD + /water (weather-adjusted if "Let AI adjust" is on)
@@ -570,6 +596,8 @@ All endpoints need `Authorization: Bearer <supabase access token>`.
 | `PATCH` | `/api/location` | `{ weather_alerts_on }`: hot / cold notifications on or off |
 | `DELETE` | `/api/location` | forget my place |
 | `GET` | `/api/forecast` | `{ place: null }`, or `{ place, days, alerts, groups }` for this week (`alerts` per plant, `groups` per kind of weather) |
+| `GET` | `/api/species/search?q=` | add by name: `{ results, nudge, group }`, with spelling fixes (Potpal's lists + GBIF) |
+| `GET` | `/api/species/details?name=&common=` | one species' care, shaped like an identification result |
 | `GET` | `/api/names?species=&common=` | `{ names: { hi, mr, ta, ml }, source: 'potpal' \| 'wikidata' \| null }` |
 | `GET` | `/api/wishlist` | my saved plants, newest first (catalogue rows + `saved_at`) |
 | `PUT` | `/api/wishlist/:slug` | save a plant (saving twice is fine; unknown plant → 404) |

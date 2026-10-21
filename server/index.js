@@ -13,6 +13,7 @@
 //   GET /api/names        → a plant's name in Hindi, Marathi, Tamil, Malayalam
 //   /api/wishlist…        → Discover plants the user has saved
 //   /api/push…            → notifications on this phone (subscribe, test)
+//   /api/species…         → add a plant by name: search (with spelling fixes) and care details
 //   POST /api/cron/reminders → the scheduled job that sends due notifications
 //
 // In production it also serves the built Vue app (client/dist), so the app and
@@ -35,6 +36,7 @@ import namesRoutes from './routes/names.js'
 import wishlistRoutes from './routes/wishlist.js'
 import pushRoutes from './routes/push.js'
 import cronRoutes from './routes/cron.js'
+import speciesRoutes from './routes/species.js'
 import { plantIdEnabled } from './lib/identify.js'
 import { pushConfigured } from './lib/push.js'
 
@@ -67,6 +69,7 @@ app.use('/api/forecast', requireUser, forecastRoutes)
 app.use('/api/names', requireUser, namesRoutes)
 app.use('/api/wishlist', requireUser, wishlistRoutes)
 app.use('/api/push', requireUser, pushRoutes)
+app.use('/api/species', requireUser, speciesRoutes)
 
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }))
 
