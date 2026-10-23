@@ -28,7 +28,6 @@ const fileInput = ref(null) // the hidden <input type="file">
 const cameraOn = ref(false)
 const flashOn = ref(false)
 const mode = ref(route.query.mode === 'health' ? 'health' : 'identify') // 'identify' | 'health'
-const showTips = ref(false)
 const busy = ref(false)
 const error = ref('')
 
@@ -181,12 +180,6 @@ async function send(photo) {
           <h2 class="d" style="font-size: 22px">Add a plant first.</h2>
           <p class="t13 lh" style="color: var(--tip)">Health scans are for plants in your crew. Identify one to get started.</p>
         </template>
-        <template v-else-if="showTips">
-          <h2 class="d" style="font-size: 22px">Tips for a great match</h2>
-          <p class="t13 lh" style="color: var(--tip)">
-            One leaf, filling most of the frame. Natural light, no flash glare. Hold still for a sharp photo.
-          </p>
-        </template>
         <template v-else-if="mode === 'health'">
           <h2 class="d" style="font-size: 22px">{{ chosenPlant ? `Scanning ${chosenPlant.nickname}` : 'Which plant is this?' }}</h2>
           <!-- One chip per plant, with its photo, so it's clear which plant the scan is for -->
@@ -211,10 +204,7 @@ async function send(photo) {
         </template>
         <template v-else>
           <h2 class="d" style="font-size: 24px">A leaf is all we need.</h2>
-          <p class="t13 lh" style="color: var(--tip)">
-            Keep one leaf in the frame, in natural light.
-            <RouterLink to="/identify/search" class="semi" style="color: var(--butter)">Know its name? Type it</RouterLink>
-          </p>
+          <p class="t13 lh" style="color: var(--tip)">Keep one leaf in the frame, in natural light.</p>
         </template>
       </div>
 
@@ -228,9 +218,12 @@ async function send(photo) {
             <circle cx="40" cy="40" r="32" fill="#FFF0BE" />
           </svg>
         </button>
-        <button class="cam-action" :aria-pressed="showTips" @click="showTips = !showTips; error = ''">
-          <Icon name="help" :size="26" color="white" />Tips
-        </button>
+        <!-- Already know what it is? Skip the photo. (Health scans are for plants you've
+             already added, so this is only for identifying.) -->
+        <RouterLink v-if="mode === 'identify'" to="/identify/search" class="cam-action">
+          <Icon name="search" :size="26" color="white" />Type name
+        </RouterLink>
+        <span v-else class="cam-action" aria-hidden="true"></span>
       </div>
       <p class="t11 lh" style="color: var(--fine)">Your photos stay yours. Always.</p>
 

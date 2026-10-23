@@ -156,6 +156,16 @@ img,svg{display:block}
 .light-meter{display:flex;flex-direction:column;gap:10px;margin-top:4px;padding:12px;border-radius:16px;background:var(--mint)}
 .light-meter__start{display:flex;align-items:center;gap:12px;width:100%}
 .light-meter__steps{padding-left:18px;display:flex;flex-direction:column;gap:2px}
+
+/* "Add by name": an ordinary search bar — magnifier, what you typed, and a way to clear it */
+.search-bar{display:flex;align-items:center;gap:10px;height:52px;padding:0 8px 0 16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-pill);transition:border-color .15s}
+.search-bar:focus-within{border-color:var(--green)}
+/* 16px keeps phones from zooming in when the field is tapped */
+.search-bar input{all:unset;flex:1;min-width:0;font-size:16px;color:var(--ink)}
+.search-bar input::placeholder{color:var(--muted)}
+.search-bar input::-webkit-search-cancel-button{display:none} /* ours looks like the rest of the app */
+.search-clear{width:36px;height:36px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.search-clear:active{background:var(--mint)}
 .shutter{border-radius:50%;transition:transform .12s}
 .shutter:active{transform:scale(.94)}
 

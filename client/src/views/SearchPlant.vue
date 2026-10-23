@@ -5,11 +5,11 @@
   Potpal's own plant lists and GBIF, fixes small spelling mistakes ("Did you
   mean…?") and says when a photo would work better (server/lib/plantSearch.js).
   Picking a result opens the usual "Plant identified" screen to name and add it.
-  Built only from the app's existing pieces: the outlined field from "Your
-  weather", the plant rows from Discover, the mint prompt from Home.
+  Built from the app's existing pieces: the plant rows from Discover, the chips
+  from the light picker, and the mint prompt from Home.
 -->
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Icon from '../components/Icon.vue'
 import AppBar from '../components/AppBar.vue'
@@ -19,6 +19,10 @@ import { setIdentifyResult } from '../lib/identifyStore.js'
 
 const router = useRouter()
 
+// A few ways in, for people who aren't sure what to type
+const EXAMPLES = ['Snake plant', 'Monstera', 'Peace lily', 'मनी प्लांट']
+
+const field = ref(null) // the search box, ready to type in as soon as the screen opens
 const query = ref('')
 const results = ref([])
 const nudge = ref(false)
@@ -29,6 +33,8 @@ const opening = ref('') // the result being opened
 const error = ref('')
 let fruitless = 0 // different names tried in a row without picking anything
 let lastTried = ''
+
+onMounted(() => field.value?.focus())
 
 // Search as the user types, once they pause
 let timer = null
@@ -41,6 +47,23 @@ function onType() {
     return
   }
   timer = setTimeout(search, 350)
+}
+
+/** The × in the bar: back to an empty search, ready for another go */
+function clear() {
+  clearTimeout(timer)
+  query.value = ''
+  results.value = []
+  searched.value = ''
+  nudge.value = false
+  error.value = ''
+  field.value?.focus()
+}
+
+/** Tapped one of the examples */
+function tryExample(name) {
+  query.value = name
+  search()
 }
 
 async function search() {
@@ -115,25 +138,39 @@ async function choose(result) {
     <AppBar title="Add by name" fallback="/identify" />
 
     <main class="screen-body">
-      <div class="stack" style="gap: 9px">
-        <p class="eyebrow green">Know your plant?</p>
-        <h2 class="d" style="font-size: 30px; line-height: 1.15">What's your plant called?</h2>
-        <p class="lede">A common name, a scientific name, or its name in Hindi, Marathi, Tamil or Malayalam.</p>
-      </div>
-
-      <label class="outlined">
-        <span class="label">Plant name</span>
+      <div class="search-bar">
+        <Icon name="search" :size="20" color="#286344" />
         <input
+          ref="field"
           v-model="query"
-          aria-label="Plant name"
+          aria-label="Search for a plant by name"
           type="search"
-          placeholder="e.g. snake plant, Monstera, मनी प्लांट"
+          placeholder="Search by plant name"
           autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
           enterkeyhint="search"
           @input="onType"
           @keydown.enter="search"
         />
-      </label>
+        <button v-if="query" type="button" class="search-clear" aria-label="Clear the search" @click="clear">
+          <Icon name="close" :size="18" color="#738075" />
+        </button>
+      </div>
+
+      <p class="t12 lh muted">
+        A common name, a scientific name, or its name in Hindi, Marathi, Tamil or Malayalam.
+      </p>
+
+      <!-- Nothing typed yet: a few to tap, so there's always a way in -->
+      <div v-if="!query.trim()" class="stack" style="gap: 10px">
+        <p class="semi t12 muted">Try one of these</p>
+        <div class="chips">
+          <button v-for="example in EXAMPLES" :key="example" type="button" class="chip" @click="tryExample(example)">
+            {{ example }}
+          </button>
+        </div>
+      </div>
 
       <p v-if="searching" class="muted t13">Searching…</p>
       <Transition name="rise">

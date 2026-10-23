@@ -137,8 +137,9 @@ migration. To buy and sell real stock later, swap those search links for a
 shopping API.
 
 **Add a plant by name.** People who already know their plant (or would
-rather not take a photo) tap **Know its name? Type it** on the camera screen,
-or **Search for it** on an empty Home.
+rather not take a photo) tap **Type name** on the camera screen, or
+**Search for it** on an empty Home. It's a plain search bar: type, and matches
+appear as you go.
 
 - **What to type:** a common name, a scientific name, or the name in Hindi,
   Marathi, Tamil or Malayalam.
