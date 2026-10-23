@@ -141,7 +141,8 @@ img,svg{display:block}
 }
 .capture .tip{display:flex;flex-direction:column;gap:7px;width:100%}
 .shutter-row{display:flex;align-items:center;justify-content:space-between;width:100%}
-.cam-action{width:56px;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px}
+/* Upload / Type name: both the same width, so the shutter stays centred, and wide enough for a two-word label */
+.cam-action{width:72px;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px;white-space:nowrap}
 .cam-action:disabled,.shutter:disabled{opacity:.45}
 /* Health scan mode: "which plant are we checking?" One chip per plant, with its
    photo; the chosen one turns butter. Many plants scroll sideways. */
